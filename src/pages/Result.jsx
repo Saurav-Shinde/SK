@@ -1,0 +1,235 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import Layout from '../components/Layout'
+
+const Result = () => {
+  const [scoreData, setScoreData] = useState(null)
+  const [isOnboarded, setIsOnboarded] = useState(true)
+  const [rating, setRating] = useState(9.1)
+
+  useEffect(() => {
+    try {
+      const storedScore = localStorage.getItem('eligibilityScore')
+      if (storedScore) {
+        const parsed = JSON.parse(storedScore)
+        setScoreData(parsed)
+        setRating(parsed.score)
+        setIsOnboarded(parsed.meetsThreshold && parsed.score >= 8.5)
+      } else {
+        // Fallback if no score data found
+        setRating(8.6)
+        setIsOnboarded(true)
+      }
+    } catch (error) {
+      console.error('Error reading eligibility score:', error)
+      setRating(8.6)
+      setIsOnboarded(true)
+    }
+  }, [])
+
+  // Get AI-generated analysis summary from stored score data
+  const aiAnalysisSummary = scoreData?.aiAnalysisSummary || 
+    (isOnboarded
+      ? 'Your brand demonstrates excellent consistency across mapping, operations, and expansion potential. The current scale and partner portfolio align perfectly with Skope Kitchens standards.'
+      : 'We spotted a few gaps in your eligibility profile. Address the highlighted points and consider re-submitting for a fresh evaluation.')
+
+  const result = isOnboarded
+    ? {
+        rating,
+        analysisSummary: aiAnalysisSummary,
+        suggestions: []
+      }
+    : {
+        rating,
+        analysisSummary: aiAnalysisSummary,
+        suggestions: [
+          'Improve brand strength by expanding outlet presence or market penetration.',
+          'Enhance social media engagement and follower base.',
+          'Optimize delivery sales and average order value.',
+          'Reduce COGS percentage to improve margins.',
+          'Consider reducing menu complexity or wastage risk.',
+          'Address special conditions that may impact operations.'
+        ]
+      }
+
+  return (
+    <Layout>
+      <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          
+
+          {isOnboarded ? (
+            // Success State
+            <div className="card text-center bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Congratulations!
+              </h1>
+              <p className="text-xl text-gray-900 mb-8">
+                You’re almost there — just one step away from being onboarded as a Skope Kitchens vendor. Feel free to schedule a call whenever it suits you.
+              </p>
+
+              {/* Rating Display */}
+              <div className="bg-gradient-to-br from-primary-50 to-white rounded-xl p-8 mb-8 border border-primary-100">
+                <p className="text-sm text-gray-600 mb-2">Your Rating</p>
+                <div className="text-6xl font-bold text-black mb-2">
+                  {result.rating.toFixed(1)}
+                  <span className="text-2xl text-gray-500">/10</span>
+                </div>
+                <div className="flex justify-center items-center space-x-1 mt-4">
+                  {[...Array(10)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-3 h-3 rounded-full ${
+                        i < Math.round(result.rating)
+                          ? 'bg-black'
+                          : 'bg-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Analysis Summary */}
+              <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Analysis Summary</h2>
+                <p className="text-gray-900 leading-relaxed">{result.analysisSummary}</p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-black text-white text-lg font-medium rounded-lg shadow-md transition-colors group"
+                >
+                  <span className="relative block overflow-hidden">
+                    <span className="block transition-transform duration-300 group-hover:-translate-y-full">
+                      <span className="block">Back to Home</span>
+                    </span>
+                    <span className="absolute inset-0 flex items-center justify-center translate-y-full transition-transform duration-300 group-hover:translate-y-0">
+                      Back to Home
+                    </span>
+                  </span>
+                </Link>
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center justify-center px-8 py-4 bg-black text-white text-lg font-medium rounded-lg shadow-md transition-colors group"
+              >
+                <span className="relative block overflow-hidden">
+                  <span className="block transition-transform duration-300 group-hover:-translate-y-full">
+                    <span className="block">Go to Dashboard</span>
+                  </span>
+                  <span className="absolute inset-0 flex items-center justify-center translate-y-full transition-transform duration-300 group-hover:translate-y-0">
+                    Go to Dashboard
+                  </span>
+                </span>
+              </Link>
+                
+              </div>
+            </div>
+          ) : (
+            // Not Onboarded State
+            <div className="card bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
+              <div className="text-center  mb-8">
+                <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                  You are not onboarded yet. Please don’t worry, you can easily schedule a call at your convenience.
+                </h1>
+              </div>
+
+              {/* Rating Display */}
+              <div className="bg-gray-50 rounded-xl p-6 mb-8 text-center">
+                <p className="text-sm text-gray-600 mb-2">Your Rating</p>
+                <div className="text-5xl font-bold text-gray-900 mb-2">
+                  {result.rating.toFixed(1)}
+                  <span className="text-xl text-gray-500">/10</span>
+                </div>
+                <div className="flex justify-center items-center space-x-1 mt-4">
+                  {[...Array(10)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-3 h-3 rounded-full ${
+                        i < Math.round(result.rating)
+                          ? 'bg-black'
+                          : 'bg-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Analysis Summary */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Analysis Summary</h2>
+                <p className="text-gray-900 leading-relaxed mb-4">{result.analysisSummary}</p>
+                  {result.suggestions && result.suggestions.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Suggestions for Improvement:</h3>
+                    <ul className="list-disc list-inside space-y-1 text-gray-900">
+                      {result.suggestions.map((suggestion, idx) => (
+                        <li key={idx}>{suggestion}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Email Notification Message */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-sm text-blue-800">
+                    We've saved your details. A detailed analysis report has been sent to your email.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col justify-evenly sm:flex-row gap-4">
+              <Link
+                  to="/"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-black text-white text-lg font-medium rounded-lg shadow-md transition-colors group"
+                >
+                  <span className="relative block overflow-hidden">
+                    <span className="block transition-transform duration-300 group-hover:-translate-y-full">
+                      <span className="block">Back to Home</span>
+                    </span>
+                    <span className="absolute inset-0 flex items-center justify-center translate-y-full transition-transform duration-300 group-hover:translate-y-0">
+                      Back to Home
+                    </span>
+                  </span>
+                </Link>
+                <Link
+                  to="https://www.skopekitchens.com/schedule-a-call"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-black text-white text-lg font-medium rounded-lg shadow-md transition-colors group"
+                >
+                  <span className="relative block overflow-hidden">
+                    <span className="block transition-transform duration-300 group-hover:-translate-y-full">
+                      <span className="block">Schedule a Call</span>
+                    </span>
+                    <span className="absolute inset-0 flex items-center justify-center translate-y-full transition-transform duration-300 group-hover:translate-y-0">
+                      Schedule a Call
+                    </span>
+                  </span>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </Layout>
+  )
+}
+
+export default Result
+
