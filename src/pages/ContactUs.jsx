@@ -1,16 +1,15 @@
 import Layout from '../components/Layout'
-import Arvind from '../assets/Arvind-Krishnan_Light.png'
-import Shiva from '../assets/Shiva-Kumar_Light.png'
-import Sanjuktha from '../assets/Sanjuktha-Babu_Light.png'
-import SocialMedia from '../assets/Social-Media.jpg'
-import DataAnalytics from '../assets/Data-Analytics.jpg'
-import ShivaKumar from '../assets/Shiva-Kumar.png'
-import SanjukthaBabu from '../assets/Sanjuktha-Babu.png'
-import TomMathew from '../assets/Tom-Mathew.png'
-import MeghnaRaj from '../assets/Meghna-Raj.png'
-import LukoseJacob from '../assets/Lukose-Jacob.JPG'
-import PrabhavathiV from '../assets/Prabhavathi-V.png'
-
+import Arvind from '/assets/Arvind-Krishnan_Light.png'
+import Shiva from '/assets/Shiva-Kumar_Light.png'
+import Sanjuktha from '/assets/Sanjuktha-Babu_Light.png'
+import SocialMedia from '/assets/Social-Media.jpg'
+import DataAnalytics from '/assets/Data-Analytics.jpg'
+import ShivaKumar from '/assets/Shiva-Kumar.png'
+import SanjukthaBabu from '/assets/Sanjuktha-Babu.png'
+import TomMathew from '/assets/Tom-Mathew.png'
+import MeghnaRaj from '/assets/Meghna-Raj.png'
+import PrabhavathiV from '/assets/Prabhavathi-V.png'
+import LukoseJacob from '/assets/Tom-Mathew.png'
 const ContactUs = () => {
   const connectTeams = [
     {

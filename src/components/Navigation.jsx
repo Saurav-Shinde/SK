@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authUtils } from '../utils/auth'
-import DarkLogo from '../assets/Logo-Dark.png'
+import DarkLogo from '/assets/Logo-Dark.png'
 
 const Navigation = () => {
   const navigate = useNavigate()

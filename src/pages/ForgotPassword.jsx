@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
-import MainBg from '../assets/Main-bg.png'
+import MainBg from '/assets/Main-bg.png'
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')

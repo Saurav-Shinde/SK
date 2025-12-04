@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { authUtils } from '../utils/auth'
-import MainBg from '../assets/Main-bg.png'
+import MainBg from '/assets/Main-bg.png'
 
 const Home = () => {
   const navigate = useNavigate()
