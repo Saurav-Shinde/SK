@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { authUtils } from '../utils/auth'
 import api from '../utils/api';
-import MainBg from '/assets/Main-bg.png'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -57,7 +56,7 @@ const Login = () => {
             <h2 className="text-2xl font-semibold text-gray-900">Partner's Login</h2>
           </div>
 
-          <div style={{ backgroundImage: `url(${MainBg})` }} className="card  bg-cover bg-center bg-no-repeat">
+          <div className="card bg-[url('/assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
             <form onSubmit={handleSubmit} className="space-y-6">
               {status.message && (
                 <div

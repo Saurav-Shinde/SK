@@ -1,50 +1,40 @@
 import Layout from '../components/Layout'
-import Arvind from '/assets/Arvind-Krishnan_Light.png'
-import Shiva from '/assets/Shiva-Kumar_Light.png'
-import Sanjuktha from '/assets/Sanjuktha-Babu_Light.png'
-import SocialMedia from '/assets/Social-Media.jpg'
-import DataAnalytics from '/assets/Data-Analytics.jpg'
-import ShivaKumar from '/assets/Shiva-Kumar.png'
-import SanjukthaBabu from '/assets/Sanjuktha-Babu.png'
-import TomMathew from '/assets/Tom-Mathew.png'
-import MeghnaRaj from '/assets/Meghna-Raj.png'
-import PrabhavathiV from '/assets/Prabhavathi-V.png'
-import LukoseJacob from '/assets/Tom-Mathew.png'
+
 const ContactUs = () => {
   const connectTeams = [
     {
       name: 'Arvind Krishnan',
       role: 'CEO',
       team: 'Management Team',
-      image: Arvind,
+      image: '/assets/Arvind-Krishnan_Light.png',
       link: 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1-i2NOUVz8zB2gjMgYfNqOmCAJqYzdC5ElwpBV9UdEyLuDQr734EBa4bqWrcHJq6SegKNA0QAG'
     },
     {
       name: 'Shiva Kumar',
       role: 'Executive Chef',
       team: 'Culinary Team',
-      image: Shiva,
+      image: '/assets/Shiva-Kumar_Light.png',
       link: 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ2gOkj36Js9GK8IIG36DPWaSEviS7Km195Xuo-O4wI_9AOt6AleQuhJ2qogIEt3-eQEB0FRSFiI'
     },
     {
       name: 'Sanjuktha Babu',
       role: 'Customer Success Manager',
       team: 'Growth Team',
-      image: Sanjuktha,
+      image: '/assets/Sanjuktha-Babu_Light.png',
       link: 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0sqwXdi-0lMbxcy9Rws29YWFm1fL3iGxKSdJZzE7aGoOpxBNoFWoVNOOyto2tPh7pEciz2FnD_'
     },
     {
       name: null,
       role: null,
       team: 'Marketing Team',
-      image: SocialMedia,
+      image: '/assets/Social-Media.jpg',
       link: 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1PA5vKyr59DqPoqyzs28vkhPS4p_TUcAI7ANM9dNWuI8PLItKsNHeiCvvMNQkeJLJ_b4mvKgot'
     },
     {
       name: null,
       role: null,
       team: 'Data Analytics Team',
-      image: DataAnalytics,
+      image: '/assets/Data-Analytics.jpg',
       link: 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ13vng14mL6kgbPsGMVQybs2i-ftRiB9dkgrgqzv3AYGDe-CG9w8ClBeYubraom6uq90V_YlgAx'
     }
   ]
@@ -54,37 +44,37 @@ const ContactUs = () => {
       name: 'Shiva Kumar',
       role: 'Executive Chef',
       team: 'Culinary Team',
-      image: ShivaKumar
+      image: '/assets/Shiva-Kumar.png'
     },
     {
       name: 'Sanjuktha Babu',
       role: 'Customer Success Manager',
       team: 'Growth Team',
-      image: SanjukthaBabu
+      image: '/assets/Sanjuktha-Babu.png'
     },
     {
       name: 'Tom Mathew',
       role: 'Co-founder & COO',
       team: 'Management Team',
-      image: TomMathew
+      image: '/assets/Tom-Mathew.png'
     },
     {
       name: 'Meghna Raj',
       role: 'HR Generalist',
       team: 'HR Department',
-      image: MeghnaRaj
+      image: '/assets/Meghna-Raj.png'
     },
     {
       name: 'Lukose Jacob',
       role: 'Data Analyst',
       team: 'Data Analyst Team',
-      image: LukoseJacob
+      image: '/assets/Tom-Mathew.png'
     },
     {
       name: 'Prabhavathi V',
       role: 'Junior Purchase Manager',
       team: 'Procurement Team',
-      image: PrabhavathiV
+      image: '/assets/Prabhavathi-V.png'
     }
   ]
 

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authUtils } from '../utils/auth'
-import DarkLogo from '/assets/Logo-Dark.png'
 
 const Navigation = () => {
   const navigate = useNavigate()
@@ -41,7 +40,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-3">
             <div className="flex flex-col">
-              <img src={DarkLogo} className="w-[180px]" alt="" />
+              <img src='/assets/Logo-Dark.png' className="w-[180px]" alt="" />
             </div>
           </Link>
 
