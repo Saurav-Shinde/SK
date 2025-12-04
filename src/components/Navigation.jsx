@@ -40,7 +40,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-3">
             <div className="flex flex-col">
-              <img src="../assets/Logo-Dark.png" className="w-[180px]" alt="" />
+              <img src="../../public/assets/Logo-Dark.png" className="w-[180px]" alt="" />
             </div>
           </Link>
 

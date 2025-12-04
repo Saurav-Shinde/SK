@@ -56,7 +56,7 @@ const Login = () => {
             <h2 className="text-2xl font-semibold text-gray-900">Partner's Login</h2>
           </div>
 
-          <div className="card bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
+          <div className="card bg-[url('../../public/assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
             <form onSubmit={handleSubmit} className="space-y-6">
               {status.message && (
                 <div

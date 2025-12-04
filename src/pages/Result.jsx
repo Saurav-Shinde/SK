@@ -60,7 +60,7 @@ const Result = () => {
 
           {isOnboarded ? (
             // Success State
-            <div className="card text-center bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
+            <div className="card text-center bg-[url('../../public/assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -133,7 +133,7 @@ const Result = () => {
             </div>
           ) : (
             // Not Onboarded State
-            <div className="card bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
+            <div className="card bg-[url('../../public/assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
               <div className="text-center  mb-8">
                 <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

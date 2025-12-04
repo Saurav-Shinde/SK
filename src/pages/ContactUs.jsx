@@ -1,9 +1,9 @@
 import Layout from '../components/Layout'
-import Arvind from '../../Assets/Arvind Krishnan_Light.png'
-import Shiva from '../../Assets/Shiva Kumar_Light.png'
-import Sanjuktha from '../../Assets/Sanjuktha Babu_Light.png'
-import SocialMedia from '../../Assets/Social Media.jpg'
-import DataAnalytics from '../../Assets/Data Analytics.jpg'
+import Arvind from '../../public/Assets/Arvind Krishnan_Light.png'
+import Shiva from '../../public/Assets/Shiva Kumar_Light.png'
+import Sanjuktha from '../../public/Assets/Sanjuktha Babu_Light.png'
+import SocialMedia from '../../public/Assets/Social Media.jpg'
+import DataAnalytics from '../../public/Assets/Data Analytics.jpg'
 
 const ContactUs = () => {
   const connectTeams = [
@@ -49,37 +49,37 @@ const ContactUs = () => {
       name: 'Shiva Kumar',
       role: 'Executive Chef',
       team: 'Culinary Team',
-      image: '../assets/Shiva Kumar.png'
+      image: '../../public/assets/Shiva Kumar.png'
     },
     {
       name: 'Sanjuktha Babu',
       role: 'Customer Success Manager',
       team: 'Growth Team',
-      image: '../assets/Sanjuktha Babu.png'
+      image: '../../public/assets/Sanjuktha Babu.png'
     },
     {
       name: 'Tom Mathew',
       role: 'Co-founder & COO',
       team: 'Management Team',
-      image: '../assets/Tom Mathew.png'
+      image: '../../public/assets/Tom Mathew.png'
     },
     {
       name: 'Meghna Raj',
       role: 'HR Generalist',
       team: 'HR Department',
-      image: '../assets/Meghna Raj.png'
+      image: '../../public/assets/Meghna Raj.png'
     },
     {
       name: 'Lukose Jacob',
       role: 'Data Analyst',
       team: 'Data Analyst Team',
-      image: '../assets/Lukose Jacob.jpg'
+      image: '../../public/assets/Lukose Jacob.jpg'
     },
     {
       name: 'Prabhavathi V',
       role: 'Junior Purchase Manager',
       team: 'Procurement Team',
-      image: '../assets/Prabhavathi V.png'
+      image: '../../public/assets/Prabhavathi V.png'
     }
   ]
 

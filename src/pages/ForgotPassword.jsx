@@ -23,7 +23,7 @@ const ForgotPassword = () => {
       <Layout>
         <div className="h-[90vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md w-full">
-            <div className="card bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat text-center">
+            <div className="card bg-[url('../../public/assets/Main-bg.png')] bg-cover bg-center bg-no-repeat text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -62,7 +62,7 @@ const ForgotPassword = () => {
             <h2 className="text-2xl font-semibold text-gray-900">Reset Password</h2>
           </div>
 
-          <div className="card bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
+          <div className="card bg-[url('../../public/assets/Main-bg.png')] bg-cover bg-center bg-no-repeat">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
