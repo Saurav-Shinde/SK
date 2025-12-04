@@ -1,5 +1,6 @@
 import react from 'react'
 import { Link } from 'react-router-dom'
+import LightLogo from'../assets/Logo-Light.png'
 
 const Footer = ()=>{
     return(
@@ -9,7 +10,7 @@ const Footer = ()=>{
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <img src="../../public/assets/Logo-Light.png" className='w-56' alt="" />
+                <img src={LightLogo} className='w-56' alt="" />
               </div>
             </div>
             <div>
