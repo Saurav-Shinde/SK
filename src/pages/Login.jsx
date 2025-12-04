@@ -27,7 +27,7 @@ const Login = () => {
     setStatus({ type: '', message: '' })
 
     try {
-      const { data } = await axios.post('http://localhost:5002/api/auth/login', {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
         email: formData.email,
         password: formData.password
       })

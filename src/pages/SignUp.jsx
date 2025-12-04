@@ -73,7 +73,7 @@ const SignUp = () => {
     setStatus({ type: '', message: '' })
 
     try {
-      const { data } = await axios.post('http://localhost:5002/api/auth/signup', {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signup`, {
         name: formData.name,
         companyName: formData.companyName,
         email: formData.email,
