@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
 import Layout from '../components/Layout'
 import { authUtils } from '../utils/auth'
+import api from '../utils/api';
 
 const Login = () => {
   const navigate = useNavigate()
@@ -27,7 +27,7 @@ const Login = () => {
     setStatus({ type: '', message: '' })
 
     try {
-      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+      const { data } = await api.post('/api/auth/login', {
         email: formData.email,
         password: formData.password
       })

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+
 import Layout from '../components/Layout'
 import { authUtils } from '../utils/auth'
+import api from '../utils/api';
 
 const SignUp = () => {
   const navigate = useNavigate()
@@ -73,7 +74,7 @@ const SignUp = () => {
     setStatus({ type: '', message: '' })
 
     try {
-      const { data } = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signup`, {
+      const { data } = await api.post('/api/auth/signup', {
         name: formData.name,
         companyName: formData.companyName,
         email: formData.email,

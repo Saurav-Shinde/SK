@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
 import Layout from '../components/Layout'
 import { authUtils } from '../utils/auth'
+import api from '../utils/api';
 
 const EligibilityForm = () => {
   const navigate = useNavigate()
@@ -162,7 +162,7 @@ const EligibilityForm = () => {
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/eligibility`, payload)
+      const response = await api.post('/api/eligibility', payload)
 
       // Store score result, AI summary, and brand name from backend response
       try {
