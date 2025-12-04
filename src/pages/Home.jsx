@@ -71,7 +71,7 @@ const Home = () => {
             How It Works
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-[url('../../public/assets/Main-bg.png')] shadow-lg bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
+            <div className="bg-[url('../../public/assets/Main-bg.png')]  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
               <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
                 1
               </div>
@@ -81,7 +81,7 @@ const Home = () => {
               </p>
             </div>
             
-            <div className="bg-[url('../../public/assets/Main-bg.png')] shadow-lg bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
+            <div className="bg-[url('../../public/assets/Main-bg.png')]  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
               <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
                 2
               </div>
@@ -91,7 +91,7 @@ const Home = () => {
               </p>
             </div>
             
-            <div className="bg-[url('../../public/assets/Main-bg.png')] shadow-lg bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
+            <div className="bg-[url('../../public/assets/Main-bg.png')]  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
               <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
                 3
               </div>

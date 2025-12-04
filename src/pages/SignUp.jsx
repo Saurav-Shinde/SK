@@ -214,7 +214,7 @@ const SignUp = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="relative w-full inline-flex items-center justify-center btn-primary text-white bg-black hover:bg-black text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
+                className="relative w-full inline-flex items-center justify-center btn-primary text-white bg-black hover:bg-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden group"
               >
                 {loading ? (
                   // No animation while loading
