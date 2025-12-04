@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { authUtils } from '../utils/auth'
-
+import MainBg from '../assets/Main-bg.png'
 
 const Home = () => {
   const navigate = useNavigate()
@@ -21,7 +21,7 @@ const Home = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="bg-[url('../../public/assets/Main-bg.png')] bg-cover bg-center shadow-lg bg-no-repeat w-10/12 mx-auto mt-20 mb-20 py-24 px-4">
+      <section style={{ backgroundImage: `url(${MainBg})` }} className=" bg-cover bg-center shadow-lg bg-no-repeat w-10/12 mx-auto mt-20 mb-20 py-24 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Skope Kitchen OS
@@ -71,7 +71,7 @@ const Home = () => {
             How It Works
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-[url('../../public/assets/Main-bg.png')]  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
+            <div style={{ backgroundImage: `url(${MainBg})` }} className=" bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
               <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
                 1
               </div>
@@ -81,7 +81,7 @@ const Home = () => {
               </p>
             </div>
             
-            <div className="bg-[url('../../public/assets/Main-bg.png')]  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
+            <div style={{ backgroundImage: `url(${MainBg})` }} className="  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
               <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
                 2
               </div>
@@ -91,7 +91,7 @@ const Home = () => {
               </p>
             </div>
             
-            <div className="bg-[url('../../public/assets/Main-bg.png')]  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
+            <div style={{ backgroundImage: `url(${MainBg})` }} className="  bg-cover bg-center bg-no-repeat rounded-xl p-8 text-center shadow-md">
               <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
                 3
               </div>

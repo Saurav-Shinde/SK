@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-
+import MainBg from '../assets/Main-bg.png'
 import Layout from '../components/Layout'
 import { authUtils } from '../utils/auth'
 import api from '../utils/api';
@@ -103,7 +103,7 @@ const SignUp = () => {
             <h2 className="text-2xl font-semibold text-gray-900">Create Your Account</h2>
           </div>
 
-          <div className="bg-[url('../assets/Main-bg.png')] bg-cover bg-center bg-no-repeat card">
+          <div style={{ backgroundImage: `url(${MainBg})` }} className=" bg-cover bg-center bg-no-repeat card">
             <form onSubmit={handleSubmit} className="space-y-6">
               {status.message && (
                 <div

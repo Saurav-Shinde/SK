@@ -1,9 +1,15 @@
 import Layout from '../components/Layout'
-import Arvind from '../../public/Assets/Arvind Krishnan_Light.png'
-import Shiva from '../../public/Assets/Shiva Kumar_Light.png'
-import Sanjuktha from '../../public/Assets/Sanjuktha Babu_Light.png'
-import SocialMedia from '../../public/Assets/Social Media.jpg'
-import DataAnalytics from '../../public/Assets/Data Analytics.jpg'
+import Arvind from '../assets/Arvind-Krishnan_Light.png'
+import Shiva from '../assets/Shiva-Kumar_Light.png'
+import Sanjuktha from '../assets/Sanjuktha-Babu_Light.png'
+import SocialMedia from '../assets/Social-Media.jpg'
+import DataAnalytics from '../assets/Data-Analytics.jpg'
+import ShivaKumar from '../assets/Shiva-Kumar.png'
+import SanjukthaBabu from '../assets/Sanjuktha-Babu.png'
+import TomMathew from '../assets/Tom-Mathew.png'
+import MeghnaRaj from '../assets/Meghna-Raj.png'
+import LukoseJacob from '../assets/Lukose-Jacob.JPG'
+import PrabhavathiV from '../assets/Prabhavathi-V.png'
 
 const ContactUs = () => {
   const connectTeams = [
@@ -49,37 +55,37 @@ const ContactUs = () => {
       name: 'Shiva Kumar',
       role: 'Executive Chef',
       team: 'Culinary Team',
-      image: '../../public/assets/Shiva Kumar.png'
+      image: ShivaKumar
     },
     {
       name: 'Sanjuktha Babu',
       role: 'Customer Success Manager',
       team: 'Growth Team',
-      image: '../../public/assets/Sanjuktha Babu.png'
+      image: SanjukthaBabu
     },
     {
       name: 'Tom Mathew',
       role: 'Co-founder & COO',
       team: 'Management Team',
-      image: '../../public/assets/Tom Mathew.png'
+      image: TomMathew
     },
     {
       name: 'Meghna Raj',
       role: 'HR Generalist',
       team: 'HR Department',
-      image: '../../public/assets/Meghna Raj.png'
+      image: MeghnaRaj
     },
     {
       name: 'Lukose Jacob',
       role: 'Data Analyst',
       team: 'Data Analyst Team',
-      image: '../../public/assets/Lukose Jacob.jpg'
+      image: LukoseJacob
     },
     {
       name: 'Prabhavathi V',
       role: 'Junior Purchase Manager',
       team: 'Procurement Team',
-      image: '../../public/assets/Prabhavathi V.png'
+      image: PrabhavathiV
     }
   ]
 
