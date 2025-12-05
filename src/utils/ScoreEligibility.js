@@ -50,14 +50,14 @@ const isYes = (v) => {
 // ----------------- main scorer -----------------
 export function computeEligibilityScore(submission = {}) {
   // ---------- GROUP A: MAPPING (3 Q) weight 10% ----------
-  // 1) Brand strength -> outlets
-  const outlets = extractNumber(submission.brandStrength)
+  // 1) Brand strength -> select value
+  const brandStrengthValue = String(submission.brandStrength || '').toLowerCase().trim()
   let brandStrengthScore = 2
-  if (outlets != null) {
-    if (outlets < 5) brandStrengthScore = 1
-    else if (outlets < 15) brandStrengthScore = 2
-    else if (outlets < 60) brandStrengthScore = 3
-    else brandStrengthScore = 4
+  if (brandStrengthValue) {
+    if (brandStrengthValue === 'new concept') brandStrengthScore = 1
+    else if (brandStrengthValue === 'local') brandStrengthScore = 2
+    else if (brandStrengthValue === 'national') brandStrengthScore = 3
+    else if (brandStrengthValue === 'international') brandStrengthScore = 4
   }
 
   // 2) Social media (followers heuristic)
@@ -134,13 +134,29 @@ export function computeEligibilityScore(submission = {}) {
   }
 
   // 4) DSP Rate % (prefer explicit percent field dspRatePercent, else try dspRateType text)
+  const dspRateType = String(submission.dspRateType || '').toLowerCase().trim()
   const dspRate = extractNumber(submission.dspRatePercent ?? submission.dspRateType)
   let dspRateScore = 2
   if (dspRate != null) {
-    if (dspRate > 26) dspRateScore = 1
-    else if (dspRate >= 22) dspRateScore = 2
-    else if (dspRate >= 18) dspRateScore = 3
-    else dspRateScore = 4
+    if (dspRateType === 'exclusive') {
+      // Exclusive: <18% = 4pts, 18-22% = 3pts, 22-26% = 2pts, >26% = 1pt
+      if (dspRate < 18) dspRateScore = 4
+      else if (dspRate < 22) dspRateScore = 3
+      else if (dspRate <= 26) dspRateScore = 2
+      else dspRateScore = 1
+    } else if (dspRateType === 'nonexclusive' || dspRateType === 'non-exclusive') {
+      // Non-exclusive: <21% = 4pts, 21-25% = 3pts, 25-29% = 2pts, >29% = 1pt
+      if (dspRate < 21) dspRateScore = 4
+      else if (dspRate < 25) dspRateScore = 3
+      else if (dspRate <= 29) dspRateScore = 2
+      else dspRateScore = 1
+    } else {
+      // Fallback for mixed or other types
+      if (dspRate > 26) dspRateScore = 1
+      else if (dspRate >= 22) dspRateScore = 2
+      else if (dspRate >= 18) dspRateScore = 3
+      else dspRateScore = 4
+    }
   }
 
   // 5) Wastage (shelf life)
@@ -208,20 +224,19 @@ export function computeEligibilityScore(submission = {}) {
     else complexityScore = 4
   }
 
-  // 9) Launch CAPEX (amount)
-  const capexAmount = extractNumber(
-    submission.launchCapexAmount ?? submission.launchCapex ?? submission.launchCAPEX
-  )
+  // 9) Launch CAPEX (pieces)
+  // Scoring: 0 pieces = 4pts, 1 piece = 3pts, 2 pieces = 2pts, 3+ pieces = 1pt
+  const capexPieces = extractNumber(submission.launchCapexPieces)
   let capexScore = 4
-  if (capexAmount != null) {
-    if (capexAmount > 100000) capexScore = 1
-    else if (capexAmount > 50000) capexScore = 2
-    else if (capexAmount >= 35000) capexScore = 3
-    else capexScore = 4
+  if (capexPieces != null) {
+    if (capexPieces === 0) capexScore = 4
+    else if (capexPieces === 1) capexScore = 3
+    else if (capexPieces === 2) capexScore = 2
+    else capexScore = 1  // 3 or more pieces
   }
 
   // 10) Smallwares cost
-  const smallwares = extractNumber(submission.smallwaresNeeded ?? submission.smallwaresCost)
+  const smallwares = extractNumber(submission.smallwaresCost ?? submission.smallwaresNeeded)
   let smallwaresScore = 2
   if (smallwares != null) {
     if (smallwares > 25000) smallwaresScore = 1
@@ -248,30 +263,31 @@ export function computeEligibilityScore(submission = {}) {
     operatingMax === operatingMin ? 0 : (operatingRaw - operatingMin) / (operatingMax - operatingMin)
 
   // ---------- GROUP C: EXPANSION (3 Q) weight 20% ----------
-  const activationNum = extractNumber(submission.activationOpportunities)
-  let activationScore = 3
-  if (activationNum != null) {
-    activationScore = activationNum <= 1 ? 1 : activationNum <= 2 ? 2 : activationNum <= 3 ? 3 : 4
-  } else {
-    // try text keywords
-    const at = String(submission.activationOpportunities || '').toLowerCase()
-    if (at.includes('limited')) activationScore = 1
-    else if (at.includes('some')) activationScore = 2
-    else if (at.includes('good')) activationScore = 3
-    else if (at.includes('strong')) activationScore = 4
-  }
+  // Activation opportunities (checkbox count: 1..4 -> 1..4 pts)
+  const activationArr = Array.isArray(submission.activationOpportunities)
+    ? submission.activationOpportunities
+    : submission.activationOpportunities
+    ? [submission.activationOpportunities]
+    : []
+  const activationCount = activationArr.length
+  let activationScore = 1
+  if (activationCount >= 4) activationScore = 4
+  else if (activationCount === 3) activationScore = 3
+  else if (activationCount === 2) activationScore = 2
+  else if (activationCount === 1) activationScore = 1
 
-  const domesticNum = extractNumber(submission.domesticOpportunities)
-  let domesticScore = 2
-  if (domesticNum != null) {
-    domesticScore = domesticNum <= 1 ? 1 : domesticNum <= 2 ? 2 : domesticNum <= 3 ? 3 : 4
-  } else {
-    const dt = String(submission.domesticOpportunities || '').toLowerCase()
-    if (dt.includes('limited')) domesticScore = 1
-    else if (dt.includes('some')) domesticScore = 2
-    else if (dt.includes('strong')) domesticScore = 3
-    else if (dt.includes('very strong') || dt.includes('international')) domesticScore = 4
-  }
+  // Domestic / international opportunities (checkbox count: 1..4 -> 1..4 pts)
+  const domesticArr = Array.isArray(submission.domesticOpportunities)
+    ? submission.domesticOpportunities
+    : submission.domesticOpportunities
+    ? [submission.domesticOpportunities]
+    : []
+  const domesticCount = domesticArr.length
+  let domesticScore = 1
+  if (domesticCount >= 4) domesticScore = 4
+  else if (domesticCount === 3) domesticScore = 3
+  else if (domesticCount === 2) domesticScore = 2
+  else if (domesticCount === 1) domesticScore = 1
 
   const marketingNum = extractNumber(submission.dspMarketingCommitment)
   let marketingScore = 2

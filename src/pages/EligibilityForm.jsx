@@ -20,16 +20,19 @@ const EligibilityForm = () => {
     deliveryAOV: '',
     cogsAnalysis: '',
     dspRateType: '',
+    dspRatePercent: '',
     wastageRisk: '',
     numberOfMenuItems: '',
     packagingType: '',
     menuSupplyChainComplexity: '',
     launchCapex: '',
+    launchCapexPieces: '',
     smallwaresNeeded: '',
+    smallwaresCost: '',
 
     // Expansion
-    activationOpportunities: '',
-    domesticOpportunities: '',
+    activationOpportunities: [],
+    domesticOpportunities: [],
     dspMarketingCommitment: '',
 
     // Special Conditions
@@ -67,6 +70,22 @@ const EligibilityForm = () => {
     }
   }
 
+  const handleCheckboxChange = (name, option) => {
+    setFormData(prev => {
+      const current = Array.isArray(prev[name]) ? prev[name] : []
+      const exists = current.includes(option)
+      const updated = exists ? current.filter(item => item !== option) : [...current, option]
+      return { ...prev, [name]: updated }
+    })
+
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }))
+    }
+  }
+
   const validate = () => {
     const newErrors = {}
 
@@ -74,11 +93,9 @@ const EligibilityForm = () => {
     if (!formData.brandName.trim()) {
       newErrors.brandName = 'Brand name is required'
     }
-    if (!formData.locationMapping.trim()) {
-      newErrors.locationMapping = 'Please describe B&M locations vs kitchens'
-    }
-    if (!formData.brandStrength.trim()) {
-      newErrors.brandStrength = 'Please describe brand strength'
+    // Location mapping is optional
+    if (!formData.brandStrength) {
+      newErrors.brandStrength = 'Please select brand strength'
     }
     if (!formData.socialMediaEngagement.trim()) {
       newErrors.socialMediaEngagement = 'Please describe social media engagement'
@@ -88,7 +105,7 @@ const EligibilityForm = () => {
     }
 
     // Operating
-    if (!formData.bmDeliverySales) {
+    if (!formData.bmDeliverySales || !formData.bmDeliverySales.trim()) {
       newErrors.bmDeliverySales = 'B&M delivery sales per storefront per day are required'
     }
     if (!formData.deliveryAOV) {
@@ -100,6 +117,9 @@ const EligibilityForm = () => {
     if (!formData.dspRateType) {
       newErrors.dspRateType = 'Please specify DSP rate type'
     }
+    if ((formData.dspRateType === 'exclusive' || formData.dspRateType === 'nonExclusive') && !formData.dspRatePercent) {
+      newErrors.dspRatePercent = 'Please enter the DSP rate percentage'
+    }
     if (!formData.wastageRisk) {
       newErrors.wastageRisk = 'Please select wastage risk level'
     }
@@ -109,13 +129,25 @@ const EligibilityForm = () => {
     if (!formData.packagingType) {
       newErrors.packagingType = 'Please select packaging type'
     }
+    if (!formData.menuSupplyChainComplexity.trim()) {
+      newErrors.menuSupplyChainComplexity = 'Please describe menu & supply chain complexity'
+    }
+    if (!formData.launchCapex.trim()) {
+      newErrors.launchCapex = 'Please provide launch CAPEX amount'
+    }
+    if (formData.launchCapexPieces === '' || formData.launchCapexPieces == null) {
+      newErrors.launchCapexPieces = 'Please select number of pieces required'
+    }
+    if (!formData.smallwaresCost.trim()) {
+      newErrors.smallwaresCost = 'Please provide smallwares cost'
+    }
 
     // Expansion
-    if (!formData.activationOpportunities.trim()) {
-      newErrors.activationOpportunities = 'Please describe activation opportunities'
+    if (!formData.activationOpportunities || formData.activationOpportunities.length === 0) {
+      newErrors.activationOpportunities = 'Please select at least one activation opportunity'
     }
-    if (!formData.domesticOpportunities.trim()) {
-      newErrors.domesticOpportunities = 'Please describe domestic / international opportunities'
+    if (!formData.domesticOpportunities || formData.domesticOpportunities.length === 0) {
+      newErrors.domesticOpportunities = 'Please select at least one domestic/international opportunity'
     }
     if (!formData.dspMarketingCommitment.trim()) {
       newErrors.dspMarketingCommitment = 'Please describe DSP marketing commitment'
@@ -125,8 +157,23 @@ const EligibilityForm = () => {
     if (!formData.retrofittingNeeded) {
       newErrors.retrofittingNeeded = 'Please specify whether retrofits are needed'
     }
+    if (!formData.additionalSpaceRequired) {
+      newErrors.additionalSpaceRequired = 'Please specify if additional space/storage is needed'
+    }
+    if (!formData.procurementSuppliers) {
+      newErrors.procurementSuppliers = 'Please specify if procurement/suppliers are needed'
+    }
     if (!formData.multipleDeliveries) {
       newErrors.multipleDeliveries = 'Please specify if multiple deliveries per day are needed'
+    }
+    if (!formData.additionalTrainingTravel) {
+      newErrors.additionalTrainingTravel = 'Please specify if additional training/travel is required'
+    }
+    if (!formData.launchTravelCosts) {
+      newErrors.launchTravelCosts = 'Please specify if brand representatives will come for training'
+    }
+    if (!formData.specialReportingIntegrations) {
+      newErrors.specialReportingIntegrations = 'Please specify if special reporting/integrations are needed'
     }
     if (!formData.equipmentAvailability.trim()) {
       newErrors.equipmentAvailability = 'Please describe equipment availability / purchase needs'
@@ -136,9 +183,7 @@ const EligibilityForm = () => {
     if (!formData.skopePartnerRelationships.trim()) {
       newErrors.skopePartnerRelationships = 'Please describe SKOPE partner relationships'
     }
-    if (!formData.sublicensingPotential.trim()) {
-      newErrors.sublicensingPotential = 'Please describe sub-licensing potential'
-    }
+    // Sublicensing potential is optional
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -242,7 +287,7 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Are the brand’s physical outlets too close to our kitchens? *
+                    Enter the locations of all outlets and your brand’s headquarters. *
                   </label>
                   <textarea
                     name="locationMapping"
@@ -259,16 +304,20 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                  How many outlets does your brand have? *
+                  How would you classify your brand's market reach? *
                   </label>
-                  <textarea
+                  <select
                     name="brandStrength"
                     value={formData.brandStrength}
                     onChange={handleChange}
-                    rows="3"
                     className={`input-field ${errors.brandStrength ? 'border-red-500' : ''}`}
-                    placeholder="Brand Status by Market, #LOC penetration (by brand category)"
-                  />
+                  >
+                    <option value="">Select</option>
+                    <option value="new concept">New Concept</option>
+                    <option value="local">Local</option>
+                    <option value="national">National</option>
+                    <option value="international">International</option>
+                  </select>
                   {errors.brandStrength && (
                     <p className="mt-1 text-sm text-red-600">{errors.brandStrength}</p>
                   )}
@@ -276,15 +325,15 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    How active is the brand on Social Media? *
+                    How large is your brand's reach on social media platforms? *
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     name="socialMediaEngagement"
                     value={formData.socialMediaEngagement}
                     onChange={handleChange}
-                    rows="3"
                     className={`input-field ${errors.socialMediaEngagement ? 'border-red-500' : ''}`}
-                    placeholder="Combined Social Media Presence (FB, INST, +), Ability to Cross Market, Contractual Commitment, Engagement, Content creation, Active on paid media, local pages."
+                    placeholder="e.g., 15000 followers, 25k followers (combined facebook + instagram + ..)"
                   />
                   {errors.socialMediaEngagement && (
                     <p className="mt-1 text-sm text-red-600">{errors.socialMediaEngagement}</p>
@@ -322,13 +371,12 @@ const EligibilityForm = () => {
                     How much does each outlet earn daily from delivery orders? *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="bmDeliverySales"
                     value={formData.bmDeliverySales}
                     onChange={handleChange}
-                    min="0"
                     className={`input-field ${errors.bmDeliverySales ? 'border-red-500' : ''}`}
-                    placeholder="e.g., 15000"
+                    placeholder="e.g., 15000, 12 lac/month, 50000 per day"
                   />
                   {errors.bmDeliverySales && (
                     <p className="mt-1 text-sm text-red-600">{errors.bmDeliverySales}</p>
@@ -374,7 +422,7 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Delivery App Commission Rates *
+                  What type of delivery app commission structure do you follow? *
                   </label>
                   <select
                     name="dspRateType"
@@ -389,6 +437,24 @@ const EligibilityForm = () => {
                   </select>
                   {errors.dspRateType && (
                     <p className="mt-1 text-sm text-red-600">{errors.dspRateType}</p>
+                  )}
+                  {(formData.dspRateType === 'exclusive' || formData.dspRateType === 'nonExclusive') && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                      What is your delivery app commission percentage? *
+                      </label>
+                      <input
+                        type="text"
+                        name="dspRatePercent"
+                        value={formData.dspRatePercent}
+                        onChange={handleChange}
+                        className={`input-field ${errors.dspRatePercent ? 'border-red-500' : ''}`}
+                        placeholder="e.g. 25%"
+                      />
+                      {errors.dspRatePercent && (
+                        <p className="mt-1 text-sm text-red-600">{errors.dspRatePercent}</p>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -454,45 +520,73 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Does your menu need extra staff, special ingredients, or minimum order sizes?
+                    Does your menu need extra staff, special ingredients, or minimum order sizes? *
                   </label>
                   <textarea
                     name="menuSupplyChainComplexity"
                     value={formData.menuSupplyChainComplexity}
                     onChange={handleChange}
                     rows="3"
-                    className="input-field"
+                    className={`input-field ${errors.menuSupplyChainComplexity ? 'border-red-500' : ''}`}
                     placeholder="Additional labour, MOQs, special order items, etc."
                   />
+                  {errors.menuSupplyChainComplexity && (
+                    <p className="mt-1 text-sm text-red-600">{errors.menuSupplyChainComplexity}</p>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Do we need to buy additional kitchen equipment for your brand?
+                    Do we need to buy additional kitchen equipment for your brand? *
                     </label>
-                    <textarea
+                    <input
+                      type="text"
                       name="launchCapex"
                       value={formData.launchCapex}
                       onChange={handleChange}
-                      rows="3"
-                      className="input-field"
-                      placeholder="Required additional equipment and investment"
+                      className={`input-field ${errors.launchCapex ? 'border-red-500' : ''}`}
+                      placeholder="e.g., 50000, 1 lac, 100k"
                     />
+                    {errors.launchCapex && (
+                      <p className="mt-1 text-sm text-red-600">{errors.launchCapex}</p>
+                    )}
+                    <label className="block text-sm font-medium text-gray-900 mb-2 mt-4">
+                      Number of pieces required *
+                    </label>
+                    <select
+                      name="launchCapexPieces"
+                      value={formData.launchCapexPieces}
+                      onChange={handleChange}
+                      className={`input-field ${errors.launchCapexPieces ? 'border-red-500' : ''}`}
+                    >
+                      <option value="">Select</option>
+                      <option value="0">0 pieces</option>
+                      <option value="1">1 piece</option>
+                      <option value="2">2 pieces</option>
+                      <option value="3">3 pieces</option>
+                      <option value="4">4 or more pieces</option>
+                    </select>
+                    {errors.launchCapexPieces && (
+                      <p className="mt-1 text-sm text-red-600">{errors.launchCapexPieces}</p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Do we need extra utensils or tools that we don’t already have?
+                    What is the cost of additional smallwares required beyond current vessel use? *
                     </label>
-                    <textarea
-                      name="smallwaresNeeded"
-                      value={formData.smallwaresNeeded}
+                    <input
+                      type="text"
+                      name="smallwaresCost"
+                      value={formData.smallwaresCost}
                       onChange={handleChange}
-                      rows="3"
-                      className="input-field"
-                      placeholder="Additional smallwares outside current vessel use"
+                      className={`input-field ${errors.smallwaresCost ? 'border-red-500' : ''}`}
+                      placeholder="e.g., 5000, 12k, 30,000"
                     />
+                    {errors.smallwaresCost && (
+                      <p className="mt-1 text-sm text-red-600">{errors.smallwaresCost}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -507,16 +601,26 @@ const EligibilityForm = () => {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Activation Opportunities *
+                    Which of the following activation opportunities apply to your brand? (Select all that apply) *
                   </label>
-                  <textarea
-                    name="activationOpportunities"
-                    value={formData.activationOpportunities}
-                    onChange={handleChange}
-                    rows="3"
-                    className={`input-field ${errors.activationOpportunities ? 'border-red-500' : ''}`}
-                    placeholder="Turnover, part of a bigger partner group, white space, presence in market"
-                  />
+                  <div className="space-y-2">
+                    {[
+                      'Strong revenue/turnover potential',
+                      'Associated with a larger partner ecosystem',
+                      'White space / new market opportunity',
+                      'Active presence in current markets'
+                    ].map(option => (
+                      <label key={option} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.activationOpportunities.includes(option)}
+                          onChange={() => handleCheckboxChange('activationOpportunities', option)}
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                        />
+                        <span className="text-sm text-gray-900">{option}</span>
+                      </label>
+                    ))}
+                  </div>
                   {errors.activationOpportunities && (
                     <p className="mt-1 text-sm text-red-600">{errors.activationOpportunities}</p>
                   )}
@@ -524,16 +628,26 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Are they already in multiple cities or countries(Domestic / International Opportunities)? *
+                  Which of the following Domestic/International opportunities apply to your brand? (Select all that apply)? *
                   </label>
-                  <textarea
-                    name="domesticOpportunities"
-                    value={formData.domesticOpportunities}
-                    onChange={handleChange}
-                    rows="3"
-                    className={`input-field ${errors.domesticOpportunities ? 'border-red-500' : ''}`}
-                    placeholder="Existing international presence, available supply chain, marketing commitment, brand equity"
-                  />
+                  <div className="space-y-2">
+                    {[
+                      'Existing International Presence',
+                      'Available Supply Chain',
+                      'Marketing Commitment',
+                      'International Brand Equity'
+                    ].map(option => (
+                      <label key={option} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.domesticOpportunities.includes(option)}
+                          onChange={() => handleCheckboxChange('domesticOpportunities', option)}
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                        />
+                        <span className="text-sm text-gray-900">{option}</span>
+                      </label>
+                    ))}
+                  </div>
                   {errors.domesticOpportunities && (
                     <p className="mt-1 text-sm text-red-600">{errors.domesticOpportunities}</p>
                   )}
@@ -541,15 +655,15 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Delivery Apps Marketing Commitment *
+                  What is your monthly marketing budget for delivery apps? *
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     name="dspMarketingCommitment"
                     value={formData.dspMarketingCommitment}
                     onChange={handleChange}
-                    rows="3"
                     className={`input-field ${errors.dspMarketingCommitment ? 'border-red-500' : ''}`}
-                    placeholder="Marketing spend per location for launch (total of 3 months)"
+                    placeholder="e.g., 15000, 50k, 1.5 lac"
                   />
                   {errors.dspMarketingCommitment && (
                     <p className="mt-1 text-sm text-red-600">{errors.dspMarketingCommitment}</p>
@@ -600,7 +714,7 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-3">
-                    Additional Space / Storage Needed?
+                    Additional Space / Storage Needed? *
                   </label>
                   <div className="flex space-x-6">
                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -626,11 +740,14 @@ const EligibilityForm = () => {
                       <span className="text-sm text-gray-900">Yes</span>
                     </label>
                   </div>
+                  {errors.additionalSpaceRequired && (
+                    <p className="mt-1 text-sm text-red-600">{errors.additionalSpaceRequired}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-3">
-                    Procurement / Suppliers Needed?
+                    Procurement / Suppliers Needed? *
                   </label>
                   <div className="flex space-x-6">
                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -656,6 +773,9 @@ const EligibilityForm = () => {
                       <span className="text-sm text-gray-900">Yes</span>
                     </label>
                   </div>
+                  {errors.procurementSuppliers && (
+                    <p className="mt-1 text-sm text-red-600">{errors.procurementSuppliers}</p>
+                  )}
                 </div>
 
                 <div>
@@ -693,7 +813,7 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-3">
-                    Additional Training / Travel Required for Launch?
+                    Additional Training / Travel Required for Launch? *
                   </label>
                   <div className="flex space-x-6">
                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -719,11 +839,14 @@ const EligibilityForm = () => {
                       <span className="text-sm text-gray-900">Yes</span>
                     </label>
                   </div>
+                  {errors.additionalTrainingTravel && (
+                    <p className="mt-1 text-sm text-red-600">{errors.additionalTrainingTravel}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-3">
-                    Will brand representatives come for training?
+                    Will brand representatives come for training? *
                   </label>
                   <div className="flex space-x-6">
                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -749,11 +872,14 @@ const EligibilityForm = () => {
                       <span className="text-sm text-gray-900">Yes</span>
                     </label>
                   </div>
+                  {errors.launchTravelCosts && (
+                    <p className="mt-1 text-sm text-red-600">{errors.launchTravelCosts}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-3">
-                    Special Reporting / Integrations Needed?
+                    Special Reporting / Integrations Needed? *
                   </label>
                   <div className="flex space-x-6">
                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -779,6 +905,9 @@ const EligibilityForm = () => {
                       <span className="text-sm text-gray-900">Yes</span>
                     </label>
                   </div>
+                  {errors.specialReportingIntegrations && (
+                    <p className="mt-1 text-sm text-red-600">{errors.specialReportingIntegrations}</p>
+                  )}
                 </div>
 
                 <div>
@@ -842,7 +971,7 @@ const EligibilityForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Can this brand be easily scaled to many kitchens using our supply chain?*
+                  Can this brand be easily scaled to many kitchens using our supply chain?
                   </label>
                   <textarea
                     name="sublicensingPotential"
