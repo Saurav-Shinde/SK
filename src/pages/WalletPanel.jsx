@@ -6,6 +6,10 @@ const WalletPanel = ({ brandId, balance }) => {
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const gstRate = 0.18;
+  const enteredNet = Number(amount);
+  const totalToDeduct = enteredNet > 0 ? enteredNet * (1 + gstRate) : 0;
+
   const deduct = async () => {
     if (!amount || !reason) {
       return alert("Amount and reason are required");
@@ -38,6 +42,12 @@ const WalletPanel = ({ brandId, balance }) => {
         value={amount}
         onChange={e => setAmount(e.target.value)}
       />
+
+      {enteredNet > 0 && (
+        <p className="text-sm text-gray-600 mb-3">
+          Total to deduct (incl 18% GST): ₹{totalToDeduct.toFixed(2)}
+        </p>
+      )}
 
       <input
         className="input-field mb-4"

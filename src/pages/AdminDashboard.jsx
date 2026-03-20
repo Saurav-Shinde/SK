@@ -4,6 +4,7 @@ import Layout from "../components/Layout";
 import BrandList from "./BrandList";
 import BrandDrawer from "./BrandDrawer";
 import api from "../utils/api";
+import { fetchFoodCost } from "../utils/costingapi";
 
 const AdminDashboard = () => {
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -19,6 +20,7 @@ const AdminDashboard = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [showRecipeInventoryModal, setShowRecipeInventoryModal] = useState(false);
   const [notifCounts, setNotifCounts] = useState(null);
+  const [showFcrModal, setShowFcrModal] = useState(false);
   const navigate = useNavigate();
   const search = typeof window !== "undefined" ? window.location.search : "";
 
@@ -173,6 +175,16 @@ const AdminDashboard = () => {
                         >
                           Inventory
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMenu(false);
+                            setShowFcrModal(true);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                        >
+                          FCR
+                        </button>
                         
                       </>
                     )}
@@ -298,6 +310,11 @@ const AdminDashboard = () => {
           <RecipeInventoryModal
             onClose={() => setShowRecipeInventoryModal(false)}
           />
+        )}
+
+        {/* FCR breakdown modal */}
+        {isRecipeManager && showFcrModal && (
+          <FcrModal onClose={() => setShowFcrModal(false)} />
         )}
 
         {/* GRN modal for recipe manager */}
@@ -968,6 +985,7 @@ function MapIngredientsModal({ onClose }) {
   const [trainingList, setTrainingList] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [loadingAutoIngredients, setLoadingAutoIngredients] = useState(false);
 
   const [stores, setStores] = useState([]);
   const [branchCode, setBranchCode] = useState("");
@@ -1112,6 +1130,62 @@ function MapIngredientsModal({ onClose }) {
   };
 
   const addIngredientRow = () => setRows((prev) => [...prev, emptyRow()]);
+
+  useEffect(() => {
+    const autofill = async () => {
+      if (!selectedRecipe?._id) return;
+      try {
+        setLoadingAutoIngredients(true);
+        const res = await api.get(
+          `/api/admin/recipe-ingredients/${recipeKind}/${selectedRecipe._id}`
+        );
+        const ingredients = res.data?.ingredients || [];
+
+        const nextRows = ingredients.length
+          ? ingredients.map((ing) => {
+              const invMatch = inventoryItems.find(
+                (it) =>
+                  it?.name === ing.itemName || it?.skuCode === ing.itemName
+              );
+
+              if (invMatch) {
+                return {
+                  skuCode: invMatch.skuCode || "",
+                  itemName: invMatch.name || ing.itemName || "",
+                  customItemName: "",
+                  ingredientBrand: ing.ingredientBrand || "",
+                  categoryName:
+                    ing.categoryName || invMatch.categoryName || "",
+                  uom: ing.uom || invMatch.measuringUnit || "",
+                  qty: ing.qty,
+                };
+              }
+
+              // Fall back to custom ingredient if not present in Rista inventory list
+              return {
+                skuCode: "",
+                itemName: "",
+                customItemName: ing.itemName || "",
+                ingredientBrand: ing.ingredientBrand || "",
+                categoryName: ing.categoryName || "",
+                uom: ing.uom || "",
+                qty: ing.qty,
+              };
+            })
+          : [emptyRow()];
+
+        setRows(nextRows);
+      } catch (err) {
+        console.error("Failed to auto-fill indent ingredients:", err);
+      } finally {
+        setLoadingAutoIngredients(false);
+      }
+    };
+
+    autofill();
+    // Re-run when inventory list for the selected branch becomes available
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRecipe, recipeKind, branchCode, inventoryItems, loadingInventory]);
 
   const handleSave = async () => {
     if (!selectedRecipe?._id) return;
@@ -1314,22 +1388,17 @@ function MapIngredientsModal({ onClose }) {
                             )}
                           </td>
                           <td className="p-2">
-                            {/* category required for custom ingredients */}
-                            {r.itemName ? (
-                              <span>{r.categoryName || "—"}</span>
-                            ) : (
-                              <select
-                                value={r.categoryName || ""}
-                                onChange={(e) =>
-                                  updateRow(idx, { categoryName: e.target.value })
-                                }
-                                className="w-full border rounded px-2 py-1 text-sm"
-                              >
-                                <option value="">Select</option>
-                                <option value="Food">Food</option>
-                                <option value="Packaging">Packaging</option>
-                              </select>
-                            )}
+                            <select
+                              value={r.categoryName || ""}
+                              onChange={(e) =>
+                                updateRow(idx, { categoryName: e.target.value })
+                              }
+                              className="w-full border rounded px-2 py-1 text-sm"
+                            >
+                              <option value="">Select</option>
+                              <option value="Food">Food</option>
+                              <option value="Packaging">Packaging</option>
+                            </select>
                           </td>
                           <td className="p-2">
                             <input
@@ -1387,7 +1456,7 @@ function MapIngredientsModal({ onClose }) {
                     }
                     className="bg-black text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50"
                   >
-                    {saving ? "Saving..." : "Save Mapping"}
+                    {saving ? "Sending..." : "Send Request to Store"}
                   </button>
                 </div>
               </>
@@ -2220,6 +2289,9 @@ function RecipeInventoryModal({ onClose }) {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [markingUsedId, setMarkingUsedId] = useState(null);
   const [transfer, setTransfer] = useState({
     fromBrandName: "",
     toBrandName: "",
@@ -2260,17 +2332,139 @@ function RecipeInventoryModal({ onClose }) {
     loadStock(selectedBrand);
   }, [selectedBrand]);
 
+  useEffect(() => {
+    setTransfer((p) => ({
+      ...p,
+      fromBrandName: selectedBrand,
+      itemName: "",
+      ingredientBrand: "",
+      uom: "",
+      qty: "",
+    }));
+  }, [selectedBrand]);
+
+  const handleDeleteRow = async (rowId) => {
+    if (!rowId) return;
+    const ok = window.confirm("Delete this inventory row?");
+    if (!ok) return;
+    setDeletingId(rowId);
+    try {
+      await api.delete(`/api/brand-stock/${rowId}`);
+      await loadStock(selectedBrand);
+      setTransfer((p) => ({ ...p, itemName: "", ingredientBrand: "", uom: "", qty: "" }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Delete failed");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleMarkUsed = async (rowId) => {
+    if (!rowId) return;
+    const ok = window.confirm("Mark this ingredient as Used?");
+    if (!ok) return;
+    setMarkingUsedId(rowId);
+    try {
+      await api.patch(`/api/brand-stock/${rowId}/used`);
+      await loadStock(selectedBrand);
+      setTransfer((p) => ({ ...p, itemName: "", ingredientBrand: "", uom: "", qty: "" }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to mark used");
+    } finally {
+      setMarkingUsedId(null);
+    }
+  };
+
+  const downloadCsv = (allRows) => {
+    const headers = [
+      "Brand Name",
+      "Item Name",
+      "Ingredient Brand",
+      "UOM",
+      "Quantity Remaining",
+      "Status",
+    ];
+
+    const escape = (v) => {
+      const s = v === null || v === undefined ? "" : String(v);
+      if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    const sorted = [...allRows].sort((a, b) => {
+      const brandA = String(a.brandName || "");
+      const brandB = String(b.brandName || "");
+      if (brandA !== brandB) return brandA.localeCompare(brandB);
+      const itemA = String(a.itemName || "");
+      const itemB = String(b.itemName || "");
+      if (itemA !== itemB) return itemA.localeCompare(itemB);
+      const ingA = String(a.ingredientBrand || "");
+      const ingB = String(b.ingredientBrand || "");
+      return ingA.localeCompare(ingB);
+    });
+
+    const lines = [
+      headers.join(","),
+      ...sorted.map((r) =>
+        [
+          r.brandName || "",
+          r.itemName || "",
+          r.ingredientBrand || "",
+          r.uom || "",
+          Number(r.qtyRemaining || 0),
+          r.status || "Pending",
+        ]
+          .map(escape)
+          .join(",")
+      ),
+    ];
+
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `brand-stock-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadAll = async () => {
+    setDownloading(true);
+    try {
+      const res = await api.get("/api/brand-stock/all");
+      const allRows = res.data?.data || [];
+      downloadCsv(allRows);
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to download inventory");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl w-[95vw] max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold">Inventory</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-black text-2xl"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleDownloadAll}
+              disabled={downloading}
+              className="bg-black text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+            >
+              {downloading ? "Downloading..." : "Download"}
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-black text-2xl"
+            >
+              ✕
+            </button>
+          </div>
         </div>
         <div className="p-6 border-b flex flex-wrap gap-4 items-end">
           <div>
@@ -2300,18 +2494,20 @@ function RecipeInventoryModal({ onClose }) {
                   <th className="p-2 text-left">Ing Brand</th>
                   <th className="p-2 text-left">UOM</th>
                   <th className="p-2 text-right">Remaining</th>
+                  <th className="p-2 text-left">Status</th>
+                  <th className="p-2 text-left">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={4} className="p-4 text-center text-gray-500">
+                    <td colSpan={6} className="p-4 text-center text-gray-500">
                       Loading...
                     </td>
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="p-4 text-center text-gray-500">
+                    <td colSpan={6} className="p-4 text-center text-gray-500">
                       No stock.
                     </td>
                   </tr>
@@ -2324,6 +2520,40 @@ function RecipeInventoryModal({ onClose }) {
                       <td className="p-2 text-right">
                         {Number(r.qtyRemaining || 0)}
                       </td>
+                      <td className="p-2">
+                        <span
+                          className={`inline-block text-xs px-2 py-1 rounded ${
+                            (r.status || "Pending") === "Used"
+                              ? "bg-gray-100 text-gray-700"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {r.status || "Pending"}
+                        </span>
+                      </td>
+                      <td className="p-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteRow(r._id)}
+                          disabled={deletingId === r._id}
+                          className="text-red-600 text-sm hover:underline disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+
+                        {(r.status || "Pending") === "Pending" && (
+                          <div className="mt-2">
+                            <button
+                              type="button"
+                              onClick={() => handleMarkUsed(r._id)}
+                              disabled={markingUsedId === r._id}
+                              className="text-blue-700 text-sm hover:underline disabled:opacity-50"
+                            >
+                              {markingUsedId === r._id ? "Marking..." : "Mark Used"}
+                            </button>
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -2334,20 +2564,11 @@ function RecipeInventoryModal({ onClose }) {
           <div className="mt-6 border rounded-lg p-4">
             <h3 className="font-semibold mb-3">Transfer Stock</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <select
-                value={transfer.fromBrandName}
-                onChange={(e) =>
-                  setTransfer((p) => ({ ...p, fromBrandName: e.target.value }))
-                }
-                className="border rounded px-3 py-2 text-sm"
-              >
-                <option value="">From brand</option>
-                {brands.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
+              <input
+                value={selectedBrand}
+                disabled
+                className="border rounded px-3 py-2 text-sm bg-gray-50 text-gray-700"
+              />
               <select
                 value={transfer.toBrandName}
                 onChange={(e) =>
@@ -2362,28 +2583,42 @@ function RecipeInventoryModal({ onClose }) {
                   </option>
                 ))}
               </select>
-              <input
-                value={transfer.itemName}
-                onChange={(e) =>
-                  setTransfer((p) => ({ ...p, itemName: e.target.value }))
-                }
+              <select
+                value={transfer.itemName ? `${transfer.itemName}|${transfer.ingredientBrand}|${transfer.uom}` : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const [itemName, ingredientBrand, uom] = val.split("|");
+                  setTransfer((p) => ({
+                    ...p,
+                    itemName: itemName || "",
+                    ingredientBrand: ingredientBrand || "",
+                    uom: uom || "",
+                  }));
+                }}
                 className="border rounded px-3 py-2 text-sm"
-                placeholder="Item name"
-              />
+              >
+                <option value="">Select pending ingredient</option>
+                {rows
+                  .filter((rr) => (rr.status || "Pending") === "Pending")
+                  .map((r) => (
+                    <option
+                      key={r._id}
+                      value={`${r.itemName || ""}|${r.ingredientBrand || ""}|${r.uom || ""}`}
+                    >
+                      {r.itemName} {r.ingredientBrand ? `(${r.ingredientBrand})` : ""} — {r.uom || "—"}
+                    </option>
+                  ))}
+              </select>
               <input
                 value={transfer.ingredientBrand}
-                onChange={(e) =>
-                  setTransfer((p) => ({ ...p, ingredientBrand: e.target.value }))
-                }
-                className="border rounded px-3 py-2 text-sm"
-                placeholder="Ing brand (optional)"
+                disabled
+                className="border rounded px-3 py-2 text-sm bg-gray-50 text-gray-700"
+                placeholder="Ing brand"
               />
               <input
                 value={transfer.uom}
-                onChange={(e) =>
-                  setTransfer((p) => ({ ...p, uom: e.target.value }))
-                }
-                className="border rounded px-3 py-2 text-sm"
+                disabled
+                className="border rounded px-3 py-2 text-sm bg-gray-50 text-gray-700"
                 placeholder="UOM"
               />
               <input
@@ -2420,6 +2655,13 @@ function RecipeInventoryModal({ onClose }) {
                     alert(err.response?.data?.message || "Transfer failed");
                   }
                 }}
+                disabled={
+                  !transfer.toBrandName ||
+                  !transfer.itemName ||
+                  !transfer.uom ||
+                  !transfer.ingredientBrand ||
+                  !Number(transfer.qty || 0)
+                }
               >
                 Transfer
               </button>
@@ -2441,4 +2683,280 @@ function RecipeInventoryModal({ onClose }) {
   );
 }
 
+/* ---------- FCR (Food Cost Review) MODAL ---------- */
+function CostRow({ label, value }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-gray-400">{label}</span>
+      <span className="font-semibold">₹{value}</span>
+    </div>
+  );
+}
+
+function FcrRecipeCostBreakdown({ data, loading }) {
+  const [expanded, setExpanded] = useState({});
+
+  const toggleExpand = (index) => {
+    setExpanded((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  if (loading) {
+    return (
+      <div className="mt-4 pt-4 border-t">
+        <p className="text-sm text-gray-500">Loading breakdown...</p>
+      </div>
+    );
+  }
+
+  if (!data || !data.breakdown || data.breakdown.length === 0) {
+    return (
+      <div className="mt-4 pt-4 border-t">
+        <p className="text-sm text-gray-500">
+          No breakdown available for this recipe.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid md:grid-cols-3 gap-6 mt-4">
+      <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-xl font-semibold mb-4">Cost Breakdown</h2>
+        <table className="w-full text-sm border">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 text-left">Item</th>
+              <th className="p-2">Type</th>
+              <th className="p-2">Qty</th>
+              <th className="p-2 text-right">Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.breakdown.map((row, index) => {
+              const isSub = row.type === "SUBRECIPE";
+
+              let parentIndex = null;
+              if (row.level > 0) {
+                for (let j = index - 1; j >= 0; j--) {
+                  if (data.breakdown[j].type === "SUBRECIPE") {
+                    parentIndex = j;
+                    break;
+                  }
+                }
+
+                if (parentIndex !== null && !expanded[parentIndex]) {
+                  return null;
+                }
+              }
+
+              return (
+                <tr key={index} className="border-t">
+                  <td className="p-2">
+                    <div
+                      className={`flex items-center gap-2 ${
+                        row.level > 0 ? "pl-6 text-gray-600" : ""
+                      }`}
+                    >
+                      {isSub && (
+                        <button
+                          onClick={() => toggleExpand(index)}
+                          className="text-xs font-bold w-4"
+                          type="button"
+                        >
+                          {expanded[index] ? "▼" : "▶"}
+                        </button>
+                      )}
+                      {row.item}
+                    </div>
+                  </td>
+                  <td className="p-2 text-center">{row.type}</td>
+                  <td className="p-2 text-center">
+                    {row.qty} {row.uom}
+                  </td>
+                  <td className="p-2 text-right">₹{row.cost}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="bg-[#111] text-white p-6 rounded-2xl">
+        <CostRow label="Food Cost" value={data.foodCost} />
+        <CostRow label="Packaging Cost" value={data.packagingCost} />
+        <CostRow
+          label="Production Variance (5%)"
+          value={data.productionVariance}
+        />
+        <div className="border-t mt-4 pt-4 flex justify-between font-bold">
+          <span>Total</span>
+          <span>₹{data.total}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FcrModal({ onClose }) {
+  const [brands, setBrands] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [mainRecipes, setMainRecipes] = useState([]);
+  const [expandedRecipeId, setExpandedRecipeId] = useState(null);
+  const [breakdownCache, setBreakdownCache] = useState({});
+  const [loadingRecipes, setLoadingRecipes] = useState(false);
+  const [loadingRecipeId, setLoadingRecipeId] = useState(null);
+
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const res = await api.get("/api/admin/brand-names");
+        const list = res.data?.data || [];
+        setBrands(list);
+        if (!selectedBrand && list.length) setSelectedBrand(list[0]);
+      } catch {
+        setBrands([]);
+      }
+    };
+    loadBrands();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const loadRecipes = async () => {
+      if (!selectedBrand) return;
+      setLoadingRecipes(true);
+      try {
+        const res = await api.get("/api/admin/recipes", {
+          params: { brand: selectedBrand },
+        });
+
+        setMainRecipes(res.data || []);
+      } catch {
+        setMainRecipes([]);
+      } finally {
+        setExpandedRecipeId(null);
+        setBreakdownCache({});
+        setLoadingRecipes(false);
+      }
+    };
+
+    loadRecipes();
+  }, [selectedBrand]);
+
+  const toggleMainRecipe = async (recipe) => {
+    if (!recipe?._id) return;
+    const isOpen = expandedRecipeId === recipe._id;
+    const nextId = isOpen ? null : recipe._id;
+    setExpandedRecipeId(nextId);
+
+    if (!nextId) return;
+    if (breakdownCache[recipe._id]) return;
+
+    setLoadingRecipeId(recipe._id);
+    try {
+      const cleanName = recipe.recipeName
+        ?.split("(")[0]      // remove (T1), (Final)
+        ?.split("-")[0]      // remove "- Dominos"
+        ?.trim();
+
+      const breakdown = await fetchFoodCost(cleanName);
+      setBreakdownCache((prev) => ({ ...prev, [recipe._id]: breakdown }));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to load breakdown");
+    } finally {
+      setLoadingRecipeId(null);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-[95vw] max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="text-2xl font-bold">FCR</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-black text-2xl"
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="p-6 border-b flex flex-wrap gap-4 items-end">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Brand
+            </label>
+            <select
+              value={selectedBrand}
+              onChange={(e) => setSelectedBrand(e.target.value)}
+              className="border rounded-lg px-3 py-2 text-sm"
+            >
+              {brands.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto p-6">
+          {loadingRecipes ? (
+            <p className="text-gray-500">Loading recipes...</p>
+          ) : mainRecipes.length === 0 ? (
+            <p className="text-gray-500">No main recipes found.</p>
+          ) : (
+            <div className="space-y-3">
+              {mainRecipes.map((recipe) => {
+                const isExpanded = expandedRecipeId === recipe._id;
+                const breakdown = breakdownCache[recipe._id];
+                const loading = loadingRecipeId === recipe._id;
+
+                return (
+                  <div key={recipe._id} className="border rounded-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleMainRecipe(recipe)}
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                    >
+                      <span className="font-semibold">
+                        {recipe.recipeName}
+                      </span>
+                      <span className="text-gray-500">
+                        {isExpanded ? "−" : "+"}
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="p-4 border-t">
+                        <FcrRecipeCostBreakdown
+                          data={breakdown}
+                          loading={loading || !breakdown}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-3 p-4 border-t">
+          <button
+            type="button"
+            className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default AdminDashboard;
+
+

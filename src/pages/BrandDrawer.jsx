@@ -340,11 +340,11 @@ const BrandDrawer = ({ brand, adminRole, onClose }) => {
                   onClick={() => {
                     // deep-link open indent request modal
                     onClose?.();
-                    navigate("/admin-dashboard?indent=1");
+                    navigate("/add-trial-recipe");
                   }}
                   className="text-sm text-blue-600 hover:underline"
                 >
-                  Make Indent Request
+                  Add Trial Recipe
                 </button>
               </div>
               {loadingMenus ? (
@@ -363,7 +363,7 @@ const BrandDrawer = ({ brand, adminRole, onClose }) => {
                       <ul className="text-sm text-gray-700">
                         {(m.items || []).map((it, idx) => (
                           <li key={idx}>
-                            {it.qty} × {it.recipeName} — ₹{Number(it.cost || 0).toFixed(2)}
+                            {it.qty} {it.uom || ""} × {it.recipeName} — ₹{Number(it.cost || 0).toFixed(2)}
                           </li>
                         ))}
                       </ul>

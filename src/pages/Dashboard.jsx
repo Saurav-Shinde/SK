@@ -59,8 +59,11 @@ export default function Dashboard() {
   const [ordersLoading, setOrdersLoading] = useState(false);
 
   const [showEnterMenu, setShowEnterMenu] = useState(false);
-  const [menuRows, setMenuRows] = useState([{ recipeName: "", qty: 1, cost: 0 }]);
+  const [menuRows, setMenuRows] = useState([
+    { recipeName: "", qty: 1, uom: "GM", cost: 0 },
+  ]);
   const [menuSaving, setMenuSaving] = useState(false);
+  const [showClientMenu, setShowClientMenu] = useState(false);
 
 
   /* ---------------- TOKEN ---------------- */
@@ -115,7 +118,8 @@ export default function Dashboard() {
       handler: async (response) => {
         await api.post("/api/wallet/verify", {
           ...response,
-          amount
+          amount,
+          applyGst: false
         });
 
         const res = await api.get("/api/wallet");
@@ -150,7 +154,10 @@ export default function Dashboard() {
 
     try {
       const dueAmount = wallet.dueAmount;
-      const { data } = await api.post("/api/wallet/create-order", { amount: dueAmount });
+      const gstInclusiveDue = Number(dueAmount) * 1.18;
+      const { data } = await api.post("/api/wallet/create-order", {
+        amount: gstInclusiveDue,
+      });
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -158,11 +165,14 @@ export default function Dashboard() {
         currency: "INR",
         order_id: data.id,
         name: "Skope Wallet",
-        description: `Pay Due Amount: ₹${formatMoney(dueAmount)}`,
+        description: `Pay Due Amount (incl GST): ₹${formatMoney(
+          gstInclusiveDue
+        )}`,
         handler: async (response) => {
           await api.post("/api/wallet/verify", {
             ...response,
-            amount: dueAmount
+            amount: dueAmount,
+            applyGst: true
           });
 
           const res = await api.get("/api/wallet");
@@ -431,60 +441,83 @@ export default function Dashboard() {
                 <h1 className="text-3xl font-semibold">{brandName}</h1>
               </div>
 
-              <div className="flex gap-4">
-                <div className="bg-white px-4 py-2 rounded-xl shadow cursor-pointer">
-                  <button
-                    onClick={() => navigate("/order")}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg"
-                  >
-                    Projection
-                  </button>
-                </div>
-
-                <div className="bg-white px-4 py-2 rounded-xl shadow cursor-pointer">
-                  <button
-                    onClick={() => setShowEnterMenu(true)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg"
-                  >
-                    Enter Menu
-                  </button>
-                </div>
-
-                <div className="bg-white px-4 py-2 rounded-xl shadow cursor-pointer">
-                  <button
-                    onClick={() => navigate("/client-inventory")}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-                  >
-                    Inventory
-                  </button>
-                </div>
-
+              <div className="flex gap-4 items-center">
+                {/* Hamburger menu */}
                 <div className="relative">
                   <button
-                    onClick={() => setShowOrders(true)}
-                    className="bg-white px-4 py-2 rounded-xl shadow cursor-pointer flex items-center gap-2"
+                    type="button"
+                    onClick={() => setShowClientMenu((prev) => !prev)}
+                    className="bg-white px-3 py-2 rounded-xl shadow cursor-pointer text-lg leading-none"
+                    aria-haspopup="menu"
+                    aria-expanded={showClientMenu}
                   >
-                    Orders
-                    {completedOrdersCount > 0 && (
-                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                        {completedOrdersCount}
-                      </span>
-                    )}
+                    ≡
                   </button>
+
+                  {showClientMenu && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowClientMenu(false);
+                          setShowEnterMenu(true);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Enter Menu
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowClientMenu(false);
+                          navigate("/order");
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Projection
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowClientMenu(false);
+                          navigate("/client-inventory");
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Inventory
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowClientMenu(false);
+                          setShowOrders(true);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center justify-between"
+                      >
+                        <span>Orders</span>
+                        {completedOrdersCount > 0 && (
+                          <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                            {completedOrdersCount}
+                          </span>
+                        )}
+                      </button>
+                      
+
+                      <div className="px-4 py-2 text-xs text-gray-500 flex items-center justify-between border-t">
+                        <span>Meeting Time Left</span>
+                        <span className="font-semibold text-blue-600">
+                          {meetingHours.toFixed(1)} hrs
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
 
                 <div
                   onClick={() => setShowWallet(true)}
                   className="bg-white px-4 py-2 rounded-xl flex items-center shadow cursor-pointer"
                 >
                   Wallet: ₹{formatMoney(wallet?.balance)}
-                </div>
-                <div className="bg-white px-4 py-2 rounded-xl shadow cursor-default">
-                  <p className="text-xs text-gray-500">Meeting Time Left</p>
-                  <p className="font-semibold text-blue-600">
-                    {meetingHours.toFixed(1)} hrs
-                  </p>
                 </div>
 
                 <button
@@ -500,7 +533,7 @@ export default function Dashboard() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <p className="font-semibold">
-                      ⚠️ Pending Due: ₹{formatMoney(wallet.dueAmount)}
+                      ⚠️ Pending Due (incl GST): ₹{formatMoney(Number(wallet.dueAmount || 0) * 1.18)}
                     </p>
                     <p className="text-sm mt-1">
                       {wallet.dueReason || "Please clear the pending amount"}
@@ -920,8 +953,9 @@ export default function Dashboard() {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="p-2 text-left">Recipe Name</th>
-                      <th className="p-2 text-right w-28">Qty</th>
-                      <th className="p-2 text-right w-40">Cost (₹)</th>
+                      <th className="p-2 text-center w-28">Quantity</th>
+                      <th className="p-2 text-center w-24">UOM</th>
+                      <th className="p-2 text-center w-40">Online Selling Price (₹).        </th>
                       <th className="p-2 w-16"></th>
                     </tr>
                   </thead>
@@ -956,6 +990,25 @@ export default function Dashboard() {
                             }
                             className="w-20 border rounded px-2 py-1 text-sm text-right"
                           />
+                        </td>
+                        <td className="p-2">
+                          <select
+                            value={r.uom || ""}
+                            onChange={(e) =>
+                              setMenuRows((prev) => {
+                                const next = [...prev];
+                                next[idx] = { ...next[idx], uom: e.target.value };
+                                return next;
+                              })
+                            }
+                            className="w-full border rounded px-2 py-1 text-sm"
+                          >
+                            <option value="">Select</option>
+                            <option value="ML">ml</option>
+                            <option value="GM">gm</option>
+                            <option value="KG">Kg</option>
+                            <option value="L">L</option>
+                          </select>
                         </td>
                         <td className="p-2 text-right">
                           <input
@@ -1012,15 +1065,16 @@ export default function Dashboard() {
                     .map((row) => ({
                       recipeName: String(row.recipeName || "").trim(),
                       qty: Number(row.qty || 0),
+                      uom: String(row.uom || "").trim(),
                       cost: Number(row.cost || 0),
                     }))
-                    .filter((row) => row.recipeName && row.qty > 0);
+                    .filter((row) => row.recipeName && row.qty > 0 && row.uom);
                   if (items.length === 0) return;
                   try {
                     setMenuSaving(true);
                     await api.post("/api/menu-entries", { items });
                     setShowEnterMenu(false);
-                    setMenuRows([{ recipeName: "", qty: 1, cost: 0 }]);
+                    setMenuRows([{ recipeName: "", qty: 1, uom: "GM", cost: 0 }]);
                     alert("Menu saved");
                   } catch (err) {
                     alert(err.response?.data?.message || "Failed to save menu");
@@ -1099,3 +1153,4 @@ function Stat({ title, value }) {
     </div>
   );
 }
+
