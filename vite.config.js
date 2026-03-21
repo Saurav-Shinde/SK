@@ -11,6 +11,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    allowedHosts: [
+      "beautiful-site-demo.cluster-0.preview.emergentcf.cloud"
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:5002',
