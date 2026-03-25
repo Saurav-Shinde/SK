@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
+import api from '../utils/api'
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,8 @@ const ResetPassword = () => {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token')
 
   const handleChange = (e) => {
     setFormData({
@@ -50,12 +53,23 @@ const ResetPassword = () => {
     }
 
     setLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      if (!token) {
+        return setErrors({ api: 'Invalid or missing reset token' })
+      }
+      await api.post('/api/auth/password-reset/confirm', {
+        token,
+        password: formData.password,
+      })
       setSubmitted(true)
+      setTimeout(() => navigate('/login'), 800)
+    } catch (err) {
+      setErrors({
+        api: err.response?.data?.message || 'Failed to reset password',
+      })
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   if (submitted) {
@@ -131,6 +145,10 @@ const ResetPassword = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
                 )}
               </div>
+
+              {errors.api && (
+                <p className="text-sm text-red-600 text-center">{errors.api}</p>
+              )}
 
               <button
                 type="submit"

@@ -2694,10 +2694,10 @@ function CostRow({ label, value }) {
 }
 
 function FcrRecipeCostBreakdown({ data, loading }) {
-  const [expanded, setExpanded] = useState({});
+  const [expandedNodes, setExpandedNodes] = useState({});
 
-  const toggleExpand = (index) => {
-    setExpanded((prev) => ({ ...prev, [index]: !prev[index] }));
+  const toggleNode = (path) => {
+    setExpandedNodes((prev) => ({ ...prev, [path]: !prev[path] }));
   };
 
   if (loading) {
@@ -2718,67 +2718,87 @@ function FcrRecipeCostBreakdown({ data, loading }) {
     );
   }
 
+  const tree = (() => {
+    const root = { level: -1, type: "ROOT", children: [] };
+    const stack = [root];
+
+    for (const row of data.breakdown || []) {
+      const rowLevel = Number(row.level || 0);
+      while (stack.length > 0 && stack[stack.length - 1].level >= rowLevel) {
+        stack.pop();
+      }
+      const parent = stack[stack.length - 1] || root;
+      const node = {
+        ...row,
+        level: rowLevel,
+        children: [],
+      };
+      parent.children.push(node);
+      if (node.type === "SUBRECIPE") {
+        stack.push(node);
+      }
+    }
+
+    return root.children;
+  })();
+
+  const renderNode = (node, depth, path) => {
+    const indent = depth * 18;
+    const isSub = node.type === "SUBRECIPE";
+    const isExpanded = expandedNodes[path] ?? false;
+
+    return (
+      <div key={path}>
+        <div
+          className="flex items-center justify-between gap-3 py-2"
+          style={{ paddingLeft: indent }}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            {isSub && (
+              <button
+                type="button"
+                onClick={() => toggleNode(path)}
+                className="text-xs font-bold text-gray-700"
+                aria-expanded={isExpanded}
+              >
+                {isExpanded ? "−" : "+"}
+              </button>
+            )}
+            <span className="font-medium truncate">{node.item}</span>
+            <span className="text-xs text-gray-500">
+              ({node.type})
+            </span>
+          </div>
+          <div className="text-right whitespace-nowrap text-sm text-gray-800">
+            <div className="text-xs text-gray-500">
+              {node.qty} {node.uom}
+            </div>
+            <div className="font-semibold">₹{node.cost}</div>
+          </div>
+        </div>
+
+        {isSub && isExpanded && (
+          <div className="mt-1 border-l border-gray-200 pl-3">
+            {(node.children || []).map((ch, idx) =>
+              renderNode(ch, depth + 1, `${path}.${idx}`)
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="grid md:grid-cols-3 gap-6 mt-4">
       <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow">
-        <h2 className="text-xl font-semibold mb-4">Cost Breakdown</h2>
-        <table className="w-full text-sm border">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2 text-left">Item</th>
-              <th className="p-2">Type</th>
-              <th className="p-2">Qty</th>
-              <th className="p-2 text-right">Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.breakdown.map((row, index) => {
-              const isSub = row.type === "SUBRECIPE";
-
-              let parentIndex = null;
-              if (row.level > 0) {
-                for (let j = index - 1; j >= 0; j--) {
-                  if (data.breakdown[j].type === "SUBRECIPE") {
-                    parentIndex = j;
-                    break;
-                  }
-                }
-
-                if (parentIndex !== null && !expanded[parentIndex]) {
-                  return null;
-                }
-              }
-
-              return (
-                <tr key={index} className="border-t">
-                  <td className="p-2">
-                    <div
-                      className={`flex items-center gap-2 ${
-                        row.level > 0 ? "pl-6 text-gray-600" : ""
-                      }`}
-                    >
-                      {isSub && (
-                        <button
-                          onClick={() => toggleExpand(index)}
-                          className="text-xs font-bold w-4"
-                          type="button"
-                        >
-                          {expanded[index] ? "▼" : "▶"}
-                        </button>
-                      )}
-                      {row.item}
-                    </div>
-                  </td>
-                  <td className="p-2 text-center">{row.type}</td>
-                  <td className="p-2 text-center">
-                    {row.qty} {row.uom}
-                  </td>
-                  <td className="p-2 text-right">₹{row.cost}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <h2 className="text-xl font-semibold mb-4">Hierarchical Breakdown</h2>
+        <div className="space-y-0">
+          {tree.length === 0 ? (
+            <p className="text-gray-500">No breakdown items found.</p>
+          ) : (
+            tree.map((n, idx) => renderNode(n, 0, `n.${idx}`))
+          )}
+        </div>
       </div>
 
       <div className="bg-[#111] text-white p-6 rounded-2xl">
@@ -2798,8 +2818,6 @@ function FcrRecipeCostBreakdown({ data, loading }) {
 }
 
 function FcrModal({ onClose }) {
-  const [brands, setBrands] = useState([]);
-  const [selectedBrand, setSelectedBrand] = useState("");
   const [mainRecipes, setMainRecipes] = useState([]);
   const [expandedRecipeId, setExpandedRecipeId] = useState(null);
   const [breakdownCache, setBreakdownCache] = useState({});
@@ -2807,29 +2825,10 @@ function FcrModal({ onClose }) {
   const [loadingRecipeId, setLoadingRecipeId] = useState(null);
 
   useEffect(() => {
-    const loadBrands = async () => {
-      try {
-        const res = await api.get("/api/admin/brand-names");
-        const list = res.data?.data || [];
-        setBrands(list);
-        if (!selectedBrand && list.length) setSelectedBrand(list[0]);
-      } catch {
-        setBrands([]);
-      }
-    };
-    loadBrands();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     const loadRecipes = async () => {
-      if (!selectedBrand) return;
       setLoadingRecipes(true);
       try {
-        const res = await api.get("/api/admin/recipes", {
-          params: { brand: selectedBrand },
-        });
-
+        const res = await api.get("/api/admin/recipes");
         setMainRecipes(res.data || []);
       } catch {
         setMainRecipes([]);
@@ -2841,7 +2840,7 @@ function FcrModal({ onClose }) {
     };
 
     loadRecipes();
-  }, [selectedBrand]);
+  }, []);
 
   const toggleMainRecipe = async (recipe) => {
     if (!recipe?._id) return;
@@ -2854,12 +2853,11 @@ function FcrModal({ onClose }) {
 
     setLoadingRecipeId(recipe._id);
     try {
-      const cleanName = recipe.recipeName
-        ?.split("(")[0]      // remove (T1), (Final)
-        ?.split("-")[0]      // remove "- Dominos"
-        ?.trim();
-
-      const breakdown = await fetchFoodCost(cleanName);
+      const breakdown = await fetchFoodCost(
+        recipe.recipeName,
+        5,
+        recipe.brand
+      );
       setBreakdownCache((prev) => ({ ...prev, [recipe._id]: breakdown }));
     } catch (err) {
       alert(err.response?.data?.message || "Failed to load breakdown");
@@ -2880,25 +2878,6 @@ function FcrModal({ onClose }) {
           >
             ✕
           </button>
-        </div>
-
-        <div className="p-6 border-b flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Brand
-            </label>
-            <select
-              value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm"
-            >
-              {brands.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <div className="flex-1 overflow-auto p-6">
@@ -2922,6 +2901,11 @@ function FcrModal({ onClose }) {
                     >
                       <span className="font-semibold">
                         {recipe.recipeName}
+                        {recipe.brand && (
+                          <span className="text-gray-500 font-normal ml-2">
+                            ({recipe.brand})
+                          </span>
+                        )}
                       </span>
                       <span className="text-gray-500">
                         {isExpanded ? "−" : "+"}

@@ -157,6 +157,15 @@ const Login = () => {
                     Sign up
                   </Link>
                 </p>
+
+                <div className="mt-3">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-black underline hover:text-gray-700"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>

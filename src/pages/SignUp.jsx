@@ -11,6 +11,11 @@ const SignUp = () => {
   // client | vendor | consumer (locked until selected)
   const [mode, setMode] = useState("")
 
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+
+  const [phoneNumber, setPhoneNumber] = useState("")
+
   const [formData, setFormData] = useState({
     name: "",
     companyName: "",
@@ -55,6 +60,9 @@ const SignUp = () => {
     if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match"
 
+    if (!termsAccepted) newErrors.termsAccepted = "Please accept Terms and Conditions"
+    if (!phoneNumber.trim()) newErrors.phoneNumber = "Mobile number is required"
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -84,6 +92,9 @@ const SignUp = () => {
         payload.fssai = formData.fssai
         payload.pan = formData.pan
       }
+
+      payload.phoneNumber = phoneNumber.trim()
+      payload.termsAccepted = termsAccepted
 
       const { data } = await api.post("/api/auth/signup", payload)
 
@@ -182,6 +193,19 @@ const SignUp = () => {
                     <label className="block text-sm font-medium mb-1">Email</label>
                     <input name="email" value={formData.email} onChange={handleChange} className="input-field mb-3" />
 
+                    <label className="block text-sm font-medium mb-1">Mobile Number</label>
+                    <input
+                      value={phoneNumber}
+                      onChange={(e) => {
+                        setPhoneNumber(e.target.value)
+                      }}
+                      className="input-field mb-3"
+                      placeholder="Enter mobile number"
+                    />
+                    {errors.phoneNumber && (
+                      <div className="text-sm text-red-700">{errors.phoneNumber}</div>
+                    )}
+
                     <label className="block text-sm font-medium mb-1">Password</label>
                     <input type="password" name="password" value={formData.password} onChange={handleChange} className="input-field mb-3" />
 
@@ -227,15 +251,140 @@ const SignUp = () => {
 
                 </div>
 
+                <div className="space-y-2">
+                  <label className="flex items-start gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <span>
+                      I agree to{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(true)}
+                        className="text-black underline font-medium"
+                      >
+                        Terms and Conditions
+                      </button>
+                    </span>
+                  </label>
+                  {errors.termsAccepted && (
+                    <div className="text-sm text-red-700">{errors.termsAccepted}</div>
+                  )}
+                </div>
+
                 <button
                   type="submit"
-                  disabled={loading || !mode}
+                  disabled={loading || !mode || !termsAccepted}
                   className="w-full bg-black text-white py-3 rounded-lg disabled:opacity-40"
                 >
                   {loading ? "Creating Account..." : "Create Account"}
                 </button>
 
               </form>
+
+              {showTermsModal && (
+                <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
+                  <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+                    <div className="p-6 border-b flex justify-between items-center">
+                      <h3 className="text-xl font-bold">Terms and Conditions</h3>
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(false)}
+                        className="text-gray-500 hover:text-black text-2xl"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="p-6 overflow-auto text-sm text-gray-800 space-y-3">
+                      <div className="space-y-3">
+                        <p><strong>SKOPE OS – TERMS AND CONDITIONS OF USE</strong></p>
+                        <p><strong>(Client Acceptance Agreement)</strong></p>
+
+                        <p>
+                          By accessing, registering, or using Skope OS ("Platform"), you ("Client", "User") agree to be bound by the following Terms and Conditions. If you do not agree, you must not use the Platform.
+                        </p>
+
+                        <p><strong>1. About Skope OS</strong></p>
+                        <p>
+                          Skope OS is a proprietary software platform designed to manage, track, and optimize operational workflows for businesses.
+                        </p>
+
+                        <p><strong>2. User Access and Account Responsibility</strong></p>
+                        <p>
+                          You agree to provide accurate information, maintain confidentiality of login credentials, and accept responsibility for all account activity.
+                        </p>
+
+                        <p><strong>3. Permitted Use</strong></p>
+                        <p>
+                          You shall not copy, modify, distribute, reverse engineer, or misuse the platform or build competing products.
+                        </p>
+
+                        <p><strong>4. Confidentiality</strong></p>
+                        <p>
+                          You may access confidential information including software logic, workflows, and business information. You agree not to disclose or misuse it.
+                        </p>
+
+                        <p><strong>5. Intellectual Property</strong></p>
+                        <p>
+                          All rights remain with the Company. No ownership or license is transferred except limited usage.
+                        </p>
+
+                        <p><strong>6. Data Usage and Privacy</strong></p>
+                        <p>
+                          You retain ownership of your data and allow Skope OS to process it to provide services.
+                        </p>
+
+                        <p><strong>7. Service Availability</strong></p>
+                        <p>
+                          The platform is provided as-is. We do not guarantee uninterrupted service.
+                        </p>
+
+                        <p><strong>8. Termination of Access</strong></p>
+                        <p>
+                          Access may be suspended or terminated for violations or misuse.
+                        </p>
+
+                        <p><strong>9. Limitation of Liability</strong></p>
+                        <p>
+                          Skope OS is not liable for indirect damages. Liability is limited to fees paid.
+                        </p>
+
+                        <p><strong>10. Confidentiality Duration</strong></p>
+                        <p>
+                          Confidentiality obligations continue as long as you have access to the platform and its confidential information.
+                        </p>
+
+                        <p><strong>11. Governing Law</strong></p>
+                        <p>
+                          These terms are governed by the laws of India.
+                        </p>
+
+                        <p><strong>12. Updates to Terms</strong></p>
+                        <p>
+                          Continued use of the platform implies acceptance of updated terms.
+                        </p>
+
+                        <p><strong>13. Acceptance</strong></p>
+                        <p>
+                          By clicking 'I Agree', you accept these terms.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-6 border-t flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(false)}
+                        className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-sm"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
@@ -252,4 +401,5 @@ const SignUp = () => {
   )
 }
 
-export default SignUp
+export { SignUp }
+

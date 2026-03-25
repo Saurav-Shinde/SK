@@ -1,21 +1,26 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
+import api from '../utils/api'
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
     setLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await api.post('/api/auth/password-reset/request', { email })
       setSubmitted(true)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to request reset link')
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   if (submitted) {
@@ -103,6 +108,12 @@ const ForgotPassword = () => {
                   </span>
                 )}
               </button>
+
+              {error && (
+                <div className="text-sm text-red-700 mt-3 text-center">
+                  {error}
+                </div>
+              )}
 
             </form>
 

@@ -40,6 +40,25 @@ const ClientInventory = () => {
     load();
   }, [clientId]);
 
+  // Sorting rule:
+  // 1) availableQty > 0 first
+  // 2) then availableQty = 0
+  // 3) within each group alphabetical by itemName
+  const sortedItems = [...items].sort((a, b) => {
+    const aQty = Number(a.availableQty || 0);
+    const bQty = Number(b.availableQty || 0);
+
+    const aHas = aQty > 0;
+    const bHas = bQty > 0;
+
+    if (aHas && !bHas) return -1;
+    if (!aHas && bHas) return 1;
+
+    const aName = String(a.itemName || "");
+    const bName = String(b.itemName || "");
+    return aName.localeCompare(bName);
+  });
+
   return (
     <Layout>
       <div className="min-h-screen bg-slate-50 px-6 py-10">
@@ -77,7 +96,7 @@ const ClientInventory = () => {
                   </tr>
                 )}
                 {!loading &&
-                  items.map((row, idx) => (
+                  sortedItems.map((row, idx) => (
                     <tr key={idx} className="border-t">
                       <td className="p-2">{row.itemName}</td>
                       <td className="p-2">{row.uom}</td>
