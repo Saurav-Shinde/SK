@@ -25,6 +25,8 @@ function safeGetToken() {
 api.interceptors.request.use((config) => {
   const token = safeGetToken()
   if (token) {
+    config.headers = config.headers || {}
+    // axios may use AxiosHeaders internally; plain assignment works, but be defensive
     config.headers.Authorization = `Bearer ${token}`
   }
   return config

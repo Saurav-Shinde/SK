@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
-import { SignUp } from './pages/SignUp'
+import {SignUp} from './pages/SignUp'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import EligibilityForm from './pages/EligibilityForm'
@@ -23,6 +23,8 @@ import AddRecipe from './pages/AddRecipe'
 import ClientInventory from "./pages/ClientInventory";
 import AddTrialRecipe from "./pages/AddTrialRecipe";
 import AddTrainingRecipe from "./pages/AddTrainingRecipe";
+import StockUpdate from "./pages/StockUpdate";
+import CheckStock from "./pages/CheckStock";
 function App() {
   return (
     <Router
@@ -57,6 +59,8 @@ function App() {
         <Route path="/add-trial-recipe" element={<AddTrialRecipe />}/>
         <Route path="/add-training-recipe" element={<AddTrainingRecipe />}/>
         <Route path="/client-inventory" element={<ClientInventory />}/>
+        <Route path="/stock-update" element={<StockUpdate />}/>
+        <Route path="/check-stock" element={<CheckStock />}/>
       </Routes>
     </Router>
   )

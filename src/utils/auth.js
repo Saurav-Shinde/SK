@@ -4,7 +4,10 @@ const USER_KEY = 'skope_user'
 export const authUtils = {
   isAuthenticated: () => {
     try {
-      const token = sessionStorage.getItem(AUTH_TOKEN_KEY)
+      const token =
+        sessionStorage.getItem(AUTH_TOKEN_KEY) ||
+        localStorage.getItem(AUTH_TOKEN_KEY) ||
+        localStorage.getItem("token")
       return !!token
     } catch (error) {
       return false
@@ -14,6 +17,8 @@ export const authUtils = {
   setAuth: (token, user = null) => {
     try {
       sessionStorage.setItem(AUTH_TOKEN_KEY, token)
+      // Keep backward-compatible localStorage copy for flows that read it
+      localStorage.setItem(AUTH_TOKEN_KEY, token)
       if (user) {
         sessionStorage.setItem(USER_KEY, JSON.stringify(user))
       }

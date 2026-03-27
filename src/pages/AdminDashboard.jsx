@@ -241,6 +241,30 @@ const AdminDashboard = () => {
                         Stock (Rista)
                       </button>
                     )}
+                    {isIngredientManager && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMenu(false);
+                          navigate("/stock-update");
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Stock Update
+                      </button>
+                    )}
+                    {isIngredientManager && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMenu(false);
+                          navigate("/check-stock");
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Check Stock
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
