@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import Layout from "../components/Layout"
+import PasswordInput from "../components/PasswordInput"
 import { authUtils } from "../utils/auth"
 import api from "../utils/api"
 
@@ -43,6 +44,8 @@ const SignUp = () => {
   const validate = () => {
     const newErrors = {}
 
+    if (!mode) newErrors.mode = "Please select a user type"
+
     if (!formData.name.trim()) newErrors.name = "Name is required"
 
     if (mode !== "consumer" && !formData.companyName.trim())
@@ -57,11 +60,24 @@ const SignUp = () => {
     else if (formData.password.length < 6)
       newErrors.password = "Minimum 6 characters"
 
-    if (formData.password !== formData.confirmPassword)
+    if (!formData.confirmPassword)
+      newErrors.confirmPassword = "Confirm password is required"
+    else if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match"
 
     if (!termsAccepted) newErrors.termsAccepted = "Please accept Terms and Conditions"
     if (!phoneNumber.trim()) newErrors.phoneNumber = "Mobile number is required"
+
+    if (!formData.addressLine1.trim())
+      newErrors.addressLine1 = "Address Line 1 is required"
+    if (!formData.city.trim()) newErrors.city = "City is required"
+    if (!formData.state.trim()) newErrors.state = "State is required"
+    if (!formData.pincode.trim()) newErrors.pincode = "Pincode is required"
+
+    if (mode === "vendor") {
+      if (!formData.fssai.trim()) newErrors.fssai = "FSSAI is required"
+      if (!formData.pan.trim()) newErrors.pan = "PAN is required"
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -69,7 +85,7 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!mode || !validate()) return
+    if (!validate()) return
     setLoading(true)
 
     try {
@@ -129,17 +145,24 @@ const SignUp = () => {
 
           {/* USER TYPE SELECT */}
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-1">Signup As</label>
+            <label className="block text-sm font-medium mb-1">
+              Signup As <span className="text-red-600" aria-hidden="true">*</span>
+            </label>
             <select
               value={mode}
-              onChange={(e) => setMode(e.target.value)}
+              onChange={(e) => {
+                setMode(e.target.value)
+                if (errors.mode) setErrors({ ...errors, mode: "" })
+              }}
               className="w-full border rounded-lg px-3 py-2"
+              required
             >
               <option value="">-- Select User Type --</option>
-              <option value="client">Client</option>
+              <option value="client">Client(Brand Owner)</option>
               <option value="vendor">Vendor</option>
               <option value="consumer">Consumer</option>
             </select>
+            {errors.mode && <div className="mt-1 text-sm text-red-600">{errors.mode}</div>}
           </div>
 
           <AnimatePresence mode="wait">
@@ -178,72 +201,183 @@ const SignUp = () => {
 
                   {/* LEFT */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
-                    <input name="name" value={formData.name} onChange={handleChange} className="input-field mb-3" />
+                    <label className="block text-sm font-medium mb-1">
+                      Name <span className="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="input-field mb-3"
+                      required
+                    />
+                    {errors.name && <div className="text-sm text-red-700 mb-3">{errors.name}</div>}
 
                     {mode !== "consumer" && (
                       <>
                         <label className="block text-sm font-medium mb-1">
-                          {mode === "client" ? "Company Name" : "Store Name"}
+                          {mode === "client" ? "Company Name" : "Store Name"}{" "}
+                          <span className="text-red-600" aria-hidden="true">*</span>
                         </label>
-                        <input name="companyName" value={formData.companyName} onChange={handleChange} className="input-field mb-3" />
+                        <input
+                          name="companyName"
+                          value={formData.companyName}
+                          onChange={handleChange}
+                          className="input-field mb-3"
+                          required
+                        />
+                        {errors.companyName && (
+                          <div className="text-sm text-red-700 mb-3">{errors.companyName}</div>
+                        )}
                       </>
                     )}
 
-                    <label className="block text-sm font-medium mb-1">Email</label>
-                    <input name="email" value={formData.email} onChange={handleChange} className="input-field mb-3" />
+                    <label className="block text-sm font-medium mb-1">
+                      Email <span className="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="input-field mb-3"
+                      required
+                    />
+                    {errors.email && <div className="text-sm text-red-700 mb-3">{errors.email}</div>}
 
-                    <label className="block text-sm font-medium mb-1">Mobile Number</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Mobile Number <span className="text-red-600" aria-hidden="true">*</span>
+                    </label>
                     <input
                       value={phoneNumber}
                       onChange={(e) => {
                         setPhoneNumber(e.target.value)
+                        if (errors.phoneNumber) setErrors({ ...errors, phoneNumber: "" })
                       }}
                       className="input-field mb-3"
                       placeholder="Enter mobile number"
+                      required
                     />
                     {errors.phoneNumber && (
                       <div className="text-sm text-red-700">{errors.phoneNumber}</div>
                     )}
 
-                    <label className="block text-sm font-medium mb-1">Password</label>
-                    <input type="password" name="password" value={formData.password} onChange={handleChange} className="input-field mb-3" />
+                    <label className="block text-sm font-medium mb-1">
+                      Password <span className="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <PasswordInput
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Enter your password"
+                      required
+                      error={errors.password}
+                      containerClassName="mb-3"
+                      id="signup-password"
+                    />
 
-                    <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                    <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className="input-field" />
+                    <label className="block text-sm font-medium mb-1 mt-3">
+                      Confirm Password <span className="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <PasswordInput
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm your password"
+                      required
+                      error={errors.confirmPassword}
+                      id="signup-confirm-password"
+                    />
                   </div>
 
                   {/* RIGHT */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Address Line 1</label>
-                    <input name="addressLine1" value={formData.addressLine1} onChange={handleChange} className="input-field mb-3" />
+                    <label className="block text-sm font-medium mb-1">
+                      Address Line 1 <span className="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      name="addressLine1"
+                      value={formData.addressLine1}
+                      onChange={handleChange}
+                      className="input-field mb-3"
+                      required
+                    />
+                    {errors.addressLine1 && (
+                      <div className="text-sm text-red-700 mb-3">{errors.addressLine1}</div>
+                    )}
 
                     <label className="block text-sm font-medium mb-1">Address Line 2</label>
                     <input name="addressLine2" value={formData.addressLine2} onChange={handleChange} className="input-field mb-3" />
 
                     <div className="grid grid-cols-2 gap-4 mb-3">
                       <div>
-                        <label className="block text-sm font-medium mb-1">City</label>
-                        <input name="city" value={formData.city} onChange={handleChange} className="input-field" />
+                        <label className="block text-sm font-medium mb-1">
+                          City <span className="text-red-600" aria-hidden="true">*</span>
+                        </label>
+                        <input
+                          name="city"
+                          value={formData.city}
+                          onChange={handleChange}
+                          className="input-field"
+                          required
+                        />
+                        {errors.city && <div className="text-sm text-red-700 mt-1">{errors.city}</div>}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">State</label>
-                        <input name="state" value={formData.state} onChange={handleChange} className="input-field" />
+                        <label className="block text-sm font-medium mb-1">
+                          State <span className="text-red-600" aria-hidden="true">*</span>
+                        </label>
+                        <input
+                          name="state"
+                          value={formData.state}
+                          onChange={handleChange}
+                          className="input-field"
+                          required
+                        />
+                        {errors.state && <div className="text-sm text-red-700 mt-1">{errors.state}</div>}
                       </div>
                     </div>
 
-                    <label className="block text-sm font-medium mb-1">Pincode</label>
-                    <input name="pincode" value={formData.pincode} onChange={handleChange} className="input-field mb-3" />
+                    <label className="block text-sm font-medium mb-1">
+                      Pincode <span className="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      name="pincode"
+                      value={formData.pincode}
+                      onChange={handleChange}
+                      className="input-field mb-3"
+                      required
+                    />
+                    {errors.pincode && (
+                      <div className="text-sm text-red-700 mb-3">{errors.pincode}</div>
+                    )}
 
                     {mode === "vendor" && (
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1">FSSAI</label>
-                          <input name="fssai" value={formData.fssai} onChange={handleChange} className="input-field" />
+                          <label className="block text-sm font-medium mb-1">
+                            FSSAI <span className="text-red-600" aria-hidden="true">*</span>
+                          </label>
+                          <input
+                            name="fssai"
+                            value={formData.fssai}
+                            onChange={handleChange}
+                            className="input-field"
+                            required
+                          />
+                          {errors.fssai && <div className="text-sm text-red-700 mt-1">{errors.fssai}</div>}
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">PAN</label>
-                          <input name="pan" value={formData.pan} onChange={handleChange} className="input-field" />
+                          <label className="block text-sm font-medium mb-1">
+                            PAN <span className="text-red-600" aria-hidden="true">*</span>
+                          </label>
+                          <input
+                            name="pan"
+                            value={formData.pan}
+                            onChange={handleChange}
+                            className="input-field"
+                            required
+                          />
+                          {errors.pan && <div className="text-sm text-red-700 mt-1">{errors.pan}</div>}
                         </div>
                       </div>
                     )}
@@ -256,8 +390,12 @@ const SignUp = () => {
                     <input
                       type="checkbox"
                       checked={termsAccepted}
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                    onChange={(e) => {
+                      setTermsAccepted(e.target.checked)
+                      if (errors.termsAccepted) setErrors({ ...errors, termsAccepted: "" })
+                    }}
                       className="mt-1"
+                    required
                     />
                     <span>
                       I agree to{" "}
@@ -268,6 +406,9 @@ const SignUp = () => {
                       >
                         Terms and Conditions
                       </button>
+                    <span className="text-red-600" aria-hidden="true">
+                      *
+                    </span>
                     </span>
                   </label>
                   {errors.termsAccepted && (
@@ -277,8 +418,8 @@ const SignUp = () => {
 
                 <button
                   type="submit"
-                  disabled={loading || !mode || !termsAccepted}
-                  className="w-full bg-black text-white py-3 rounded-lg disabled:opacity-40"
+                  disabled={loading}
+                  className="w-full btn-primary py-3 rounded-lg disabled:opacity-40"
                 >
                   {loading ? "Creating Account..." : "Create Account"}
                 </button>

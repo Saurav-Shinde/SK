@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import api from '../utils/api'
+import PasswordInput from '../components/PasswordInput'
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -112,38 +113,30 @@ const ResetPassword = () => {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
                   New Password
                 </label>
-                <input
-                  type="password"
-                  id="password"
+                <PasswordInput
+                  id="reset-password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className={`input-field ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="Enter new password"
+                  error={errors.password}
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                )}
               </div>
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900 mb-2">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
+                <PasswordInput
+                  id="reset-confirm-password"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className={`input-field ${errors.confirmPassword ? 'border-red-500' : ''}`}
                   placeholder="Confirm new password"
+                  error={errors.confirmPassword}
                 />
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                )}
               </div>
 
               {errors.api && (

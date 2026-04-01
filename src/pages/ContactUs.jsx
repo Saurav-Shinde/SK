@@ -123,12 +123,12 @@ const ContactUs = () => {
   ];
 
   const teamMembers = [
-    { name: "Culinary Team", role: "Executive Chef", team: "Culinary Team", image: "/assets/chef.jpg" },
+    { name: "Culinary Team", role: "Executive Chef", team: "Culinary Team", image: "/assets/Chef.jpeg" },
     { name: "Sanjuktha Babu", role: "Customer Success Manager", team: "Growth Team", image: "/assets/Sanjuktha-Babu.png" },
     { name: "Tom Mathew", role: "Co-founder & COO", team: "Management Team", image: "/assets/Tom-Mathew.png" },
     { name: "Meghna Raj", role: "HR Generalist", team: "HR Department", image: "/assets/Meghna-Raj.png" },
-    { name: "Lukose Jacob", role: "Data Analyst", team: "Data Analyst Team", image: "/assets/Lukose-Jacob.png" },
-    { name: "Prabhavathi V", role: "Junior Purchase Manager", team: "Procurement Team", image: "/assets/Prabhavathi-V.png" },
+    { name: "Ediga Chenna Kesava Goud", role: "Data Analyst", team: "Data Analyst Team", image: "/assets/Kesava-Goud.jpeg" },
+    { name: "Pradeep C R", role: "Restaurant Manager", team: "Restaurant Manager", image: "/assets/Pradeep.jpeg" },
   ];
 
   const byDay = groupSlotsByDay(slots);

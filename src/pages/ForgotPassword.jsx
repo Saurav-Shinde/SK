@@ -44,7 +44,7 @@ const ForgotPassword = () => {
               >
                 <span className="relative block overflow-hidden">
                   <span className="block transition-transform duration-300 group-hover:-translate-y-full">
-                    <span className="block">Baack to Login</span>
+                    <span className="block">Back to Login</span>
                   </span>
                   <span className="absolute inset-0 flex items-center justify-center translate-y-full transition-transform duration-300 group-hover:translate-y-0">
                     Back to Login

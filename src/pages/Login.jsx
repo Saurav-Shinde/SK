@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Layout from '../components/Layout'
+import PasswordInput from '../components/PasswordInput'
 import { authUtils } from '../utils/auth'
 import api from '../utils/api';
 
@@ -130,13 +131,12 @@ const Login = () => {
                   <label className="block text-sm font-medium text-gray-900 mb-2">
                     Password
                   </label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="input-field"
+                    id="login-password"
                     placeholder="Enter your password"
                   />
                 </div>

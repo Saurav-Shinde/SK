@@ -146,7 +146,7 @@ export default function EligibilityForm() {
               </div>
             )}
 
-            <Field label="Brand Name" error={errors.brandName}>
+            <Field label="Brand Name" error={errors.brandName} required>
               <input
                 type="text"
                 name="brandName"
@@ -155,10 +155,11 @@ export default function EligibilityForm() {
                 className={`w-full border rounded-lg px-3 py-2 ${
                   errors.brandName ? "border-red-500" : ""
                 }`}
+                required
               />
             </Field>
 
-            <Field label="Menu List" hint="Comma separated" error={errors.menuList}>
+            <Field label="Menu List" hint="Comma separated" error={errors.menuList} required>
               <textarea
                 name="menuList"
                 value={formData.menuList}
@@ -167,6 +168,7 @@ export default function EligibilityForm() {
                   errors.menuList ? "border-red-500" : ""
                 }`}
                 rows={3}
+                required
               />
             </Field>
 
@@ -174,6 +176,7 @@ export default function EligibilityForm() {
               label="Equipments List"
               hint="Comma separated"
               error={errors.equipmentsList}
+              required
             >
               <textarea
                 name="equipmentsList"
@@ -183,6 +186,7 @@ export default function EligibilityForm() {
                   errors.equipmentsList ? "border-red-500" : ""
                 }`}
                 rows={3}
+                required
               />
             </Field>
 
@@ -190,6 +194,7 @@ export default function EligibilityForm() {
               label="Smallware List"
               hint="Comma separated"
               error={errors.smallwareList}
+              required
             >
               <textarea
                 name="smallwareList"
@@ -199,11 +204,12 @@ export default function EligibilityForm() {
                   errors.smallwareList ? "border-red-500" : ""
                 }`}
                 rows={3}
+                required
               />
             </Field>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Average Order Value" error={errors.averageOrderValue}>
+              <Field label="Average Order Value" error={errors.averageOrderValue} required>
                 <input
                   type="number"
                   name="averageOrderValue"
@@ -212,9 +218,10 @@ export default function EligibilityForm() {
                   className={`w-full border rounded-lg px-3 py-2 ${
                     errors.averageOrderValue ? "border-red-500" : ""
                   }`}
+                  required
                 />
               </Field>
-              <Field label="Orders per Day" error={errors.ordersPerDay}>
+              <Field label="Orders per Day" error={errors.ordersPerDay} required>
                 <input
                   type="number"
                   name="ordersPerDay"
@@ -223,6 +230,7 @@ export default function EligibilityForm() {
                   className={`w-full border rounded-lg px-3 py-2 ${
                     errors.ordersPerDay ? "border-red-500" : ""
                   }`}
+                  required
                 />
               </Field>
             </div>
@@ -261,6 +269,7 @@ export default function EligibilityForm() {
               label="Operational Hours"
               hint='Example: "10 AM - 11 PM"'
               error={errors.operationalHours}
+              required
             >
               <input
                 type="text"
@@ -270,13 +279,15 @@ export default function EligibilityForm() {
                 className={`w-full border rounded-lg px-3 py-2 ${
                   errors.operationalHours ? "border-red-500" : ""
                 }`}
+                required
               />
             </Field>
 
-            <Field label="Document Upload" error={errors.document}>
+            <Field label="Document Upload" error={errors.document} required>
               <input
                 type="file"
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                required
                 onChange={(e) => {
                   const file = e.target.files?.[0] || null;
                   setFormData((prev) => ({ ...prev, document: file }));
@@ -308,11 +319,16 @@ export default function EligibilityForm() {
   );
 }
 
-function Field({ label, hint, error, children }) {
+function Field({ label, hint, error, required = false, children }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-900 mb-1">
-        {label}
+        {label}{" "}
+        {required && (
+          <span className="text-red-600" aria-hidden="true">
+            *
+          </span>
+        )}
       </label>
       {hint && <p className="text-xs text-gray-500 mb-1">{hint}</p>}
       {children}
